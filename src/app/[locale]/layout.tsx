@@ -14,6 +14,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { PwaProvider } from "@/components/shared/pwa-provider";
 import { PwaRuntime } from "@/components/pwa/pwa-runtime";
 import { DonationPosterPopupLazy } from "@/components/promo/donation-poster-popup-lazy";
+import { RouteScrollReset } from "@/components/shared/route-scroll-reset";
+import { AosRuntime } from "@/components/shared/aos";
 import { siteUrl } from "@/lib/site";
 import "../globals.css";
 
@@ -76,8 +78,10 @@ export default async function LocaleLayout({ children, params }: { children: Rea
 
   const [messages, config, profile, promo] = await Promise.all([getMessages(), getPrayerConfig(), getProfile(), getPromoPopup()]);
 
+  // data-scroll-behavior="smooth": Next 16 mematikan sementara scroll-behavior: smooth (globals.css)
+  // saat pindah halaman, sehingga guliran ke atas tidak dianimasikan lalu terpotong di tengah.
   return (
-    <html lang={locale} suppressHydrationWarning className={`${jakarta.variable} ${notoJp.variable} ${amiri.variable}`}>
+    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth" className={`${jakarta.variable} ${notoJp.variable} ${amiri.variable}`}>
       <body className="min-h-dvh flex flex-col">
         {/* Skrip tema di awal <body> (bukan <head> manual) agar hidrasi <head> React tidak bentrok
             dengan metadata Next; tetap berjalan sebelum konten dilukis sehingga tidak berkedip. */}
@@ -88,6 +92,8 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               <ToastProvider>
                 <PwaProvider>
                   {children}
+                  <RouteScrollReset />
+                  <AosRuntime />
                   <PwaRuntime />
                   <DonationPosterPopupLazy popup={promo} alt={pick(promo.alt, locale as Locale)} />
                 </PwaProvider>

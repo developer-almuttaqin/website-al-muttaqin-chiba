@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { SectionTag } from "@/components/ui/section-tag";
 import { IconCircle, NumberedItem } from "@/components/ui/primitives";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { BookingForm, type BookingRoomOption } from "@/components/programs";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -33,6 +34,7 @@ export default async function BookingPage({ params }: { params: Promise<{ locale
           <SectionHeading
             as="h1"
             tone="inverse"
+            aos={false}
             tag={t("tag")}
             tri={{ ja: "施設利用", ar: "حجز القاعة" }}
             title={t("title")}
@@ -45,8 +47,8 @@ export default async function BookingPage({ params }: { params: Promise<{ locale
       <section className="container-site py-12 lg:py-16">
         <SectionHeading tag={t("rooms.tag")} title={t("rooms.title")} highlight={t("rooms.highlight")} description={t("rooms.description")} />
         <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {rooms.map((room) => (
-            <Card key={room.id} className="flex h-full flex-col gap-5">
+          {rooms.map((room, i) => (
+            <Card key={room.id} className="flex h-full flex-col gap-5" {...aos("fade-up", { delay: stagger(i % 2) })}>
               <div className="flex items-start justify-between gap-3">
                 <IconCircle tone="soft" shape="square">
                   <Landmark />
@@ -91,7 +93,7 @@ export default async function BookingPage({ params }: { params: Promise<{ locale
       <section className="bg-surface/60">
         <div className="container-site grid grid-cols-1 gap-10 py-12 lg:grid-cols-[1fr_1.4fr] lg:gap-14 lg:py-16">
           <div className="space-y-6">
-            <div>
+            <div {...aos("fade-up")}>
               <SectionTag>{t("rules.tag")}</SectionTag>
               <h2 className="mt-3 text-2xl font-bold">
                 {t("rules.title")} <span className="text-brand">{t("rules.highlight")}</span>
@@ -103,7 +105,7 @@ export default async function BookingPage({ params }: { params: Promise<{ locale
               </div>
             </div>
 
-            <Card variant="dark" className="flex items-start gap-4">
+            <Card variant="dark" className="flex items-start gap-4" {...aos("fade-up", { delay: 80 })}>
               <IconCircle tone="inverse">
                 <CalendarDays />
               </IconCircle>
@@ -118,7 +120,7 @@ export default async function BookingPage({ params }: { params: Promise<{ locale
             </Card>
           </div>
 
-          <Card className="p-6 sm:p-8" id="form">
+          <Card className="p-6 sm:p-8" id="form" {...aos("fade-up", { delay: 80 })}>
             <SectionTag tone="brand">{t("form.tag")}</SectionTag>
             <h2 className="mt-3 text-2xl font-bold">{t("form.title")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{t("form.description")}</p>

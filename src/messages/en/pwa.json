@@ -14,7 +14,7 @@
   "offlineNow": "You are offline. Showing saved content.",
   "notifications": {
     "title": "Adhan notifications",
-    "body": "Get a notification at each prayer time and before iqamah.",
+    "body": "One notification at each prayer time, including the iqamah time at the mosque.",
     "enable": "Enable notifications",
     "enabled": "Notifications are on",
     "denied": "Notifications are blocked in your browser settings.",

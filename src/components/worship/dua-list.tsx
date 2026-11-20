@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState, Progress } from "@/components/ui/primitives";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { ArabicSizeControl, useArabicSizeClass } from "./arabic-size-control";
 import { useIsClient } from "./storage";
 import { normalizeSearch } from "./utils";
@@ -119,8 +120,8 @@ export function DuaList({ duas, locale }: { duas: Dua[]; locale: Locale }) {
                 <EmptyState icon={<Search />} title={t("search.empty")} />
               ) : (
                 <ul className="flex flex-col gap-3">
-                  {list.map((dua) => (
-                    <li key={dua.id}>
+                  {list.map((dua, i) => (
+                    <li key={dua.id} {...aos("fade-up", { delay: stagger(i, 50, 200) })}>
                       <DuaCard
                         dua={dua}
                         locale={locale}

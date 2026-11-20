@@ -27,6 +27,15 @@ react-hook-form + zod, Leaflet (react-leaflet), Supabase (opsional; tanpa env me
 - Mobile-first dan responsif penuh (uji 360, 768, 1280, 1536 px); mode terang & gelap (`.dark` di html,
   otomatis lewat `ThemeProvider`; tidak perlu `dark:` kecuali untuk kasus khusus karena token sudah berubah).
 - Hormati `prefers-reduced-motion`. Animasi masuk pakai `animate-fade-up` atau Motion dengan `useReducedMotion`.
+- Animasi saat gulir (AOS): sebar `{...aos("fade-up", { delay: stagger(i) })}` dari `@/components/shared/aos-props`
+  ke elemen DOM (boleh di Server Component); mesinnya `AosRuntime` di layout locale, CSS di globals.css.
+  Nama: fade, fade-up, fade-down, fade-left, fade-right, zoom-in, zoom-in-up, zoom-out, flip-up, slide-up.
+  `SectionHeading` sudah ber-AOS kecuali `as="h1"` (`aos={false}` untuk mematikan). Jangan menumpuk data-aos (induk & anak),
+  pasang di pembungkus tanpa transisi/hover sendiri (mis. `<li>` di sekitar kartu), jangan di elemen
+  `sticky`/`fixed`, dialog, header, bottom nav, atau panel admin. Daftar panjang: `stagger()` sudah dibatasi.
+- Pindah halaman (pathname berubah) selalu mulai dari paling atas (`RouteScrollReset` di layout locale),
+  termasuk `Link scroll={false}`; yang dikecualikan hanya tombol kembali/maju dan URL #jangkar yang
+  elemennya ada. `scroll={false}` hanya berpengaruh pada perubahan query/hash di pathname yang sama.
 - Teks Jepang: biarkan `:lang(ja)` di globals.css menangani font & pemenggalan; jangan `word-break: keep-all`.
 
 ## Aturan kode

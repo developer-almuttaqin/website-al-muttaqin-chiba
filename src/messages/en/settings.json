@@ -23,8 +23,6 @@
     "serverActive": "Push active",
     "disable": "Turn off notifications",
     "prayers": "Prayer times",
-    "iqamah": "Iqamah reminder",
-    "iqamahHint": "10 minutes before iqamah at the mosque.",
     "jumuah": "Jumuah reminder",
     "jumuahHint": "30 minutes before Friday prayer.",
     "noVapid": "Server notifications are not active yet. Reminders still appear while the app is open.",
@@ -75,9 +73,7 @@
   },
   "notify": {
     "adhanTitle": "{prayer} adhan",
-    "adhanBody": "It is time for {prayer} at {time} (JST).",
-    "iqamahTitle": "Iqamah {prayer} in {minutes} minutes",
-    "iqamahBody": "Iqamah at Al Muttaqin is at {time}.",
+    "adhanBody": "It is time for {prayer} at {time} (JST). Iqamah at Al Muttaqin is at {iqamah}.",
     "jumuahTitle": "Friday prayer at {time}",
     "jumuahBody": "Jumuah at Al Muttaqin starts in {minutes} minutes.",
     "actionOpen": "Open schedule",
@@ -85,16 +81,16 @@
   },
   "sound": {
     "title": "Reminder sound",
-    "description": "What happens at prayer time while the app is open.",
+    "description": "Al Muttaqin's signature sound when a notification arrives while the app is open.",
     "modes": {
       "adhan": "Full adhan",
-      "chime": "Short chime",
+      "chime": "Al Muttaqin jingle",
       "vibrate": "Vibration only",
       "silent": "Silent"
     },
     "hints": {
-      "adhan": "Madinah-style adhan at prayer time; chime for iqamah",
-      "chime": "A soft three-note bell",
+      "adhan": "Madinah-style adhan at prayer time; signature jingle for other reminders",
+      "chime": "A signature jingle in maqam Hijaz for every notification",
       "vibrate": "No sound, phone vibrates",
       "silent": "Notification only"
     },
@@ -104,8 +100,8 @@
     "preview": "Preview sound",
     "previewTitle": "Sound preview",
     "stop": "Stop",
-    "foregroundNote": "While the app is open (even in another tab), the reminder fires right at the adhan time with the sound above and a Stop button. Browsers only allow sound after you have tapped the app once, so tap anywhere after opening it.",
-    "backgroundNote": "When the app is closed, your phone shows the notification with its standard notification sound. Browsers do not allow a custom sound such as the adhan for background notifications. On iPhone, notifications need the app added to the Home Screen (iOS 16.4 or later).",
+    "foregroundNote": "While the app is open, every notification (adhan, Jumuah, announcements) plays the signature sound above right on time, with a Stop button. Browsers only allow sound after you tap the app once each time you open it, so tap anywhere after opening it. Opening the app after the adhan time never plays the adhan.",
+    "backgroundNote": "When the app is closed, your phone shows one notification per prayer time with its standard notification sound. Browsers (Android and iPhone) do not allow a custom sound such as the adhan for background notifications. On iPhone, notifications need the app added to the Home Screen (iOS 16.4 or later).",
     "credit": "Adhan recording: \"Call to Prayer from the Prophet's Mosque\" (Masjid an-Nabawi, Madinah) by ejaz215 via Wikimedia Commons, license"
   },
   "alert": {
@@ -113,6 +109,12 @@
     "play": "Play adhan",
     "stop": "Stop",
     "close": "Close",
-    "blocked": "Your browser blocked the sound. Tap Play adhan to hear it."
+    "blocked": "Your browser blocked the sound. Tap Play adhan to hear it.",
+    "labelBroadcast": "Announcement",
+    "labelTest": "Test notification",
+    "playSound": "Play sound",
+    "blockedSound": "Your browser blocked the sound. Tap Play sound to hear it.",
+    "open": "Open",
+    "unlockHint": "Tap once to turn on reminder sounds"
   }
 }

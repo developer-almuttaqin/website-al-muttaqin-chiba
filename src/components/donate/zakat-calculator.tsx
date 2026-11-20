@@ -11,6 +11,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { IconCircle } from "@/components/ui/primitives";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { aos } from "@/components/shared/aos-props";
 import {
   DEFAULT_GOLD_PRICE_JPY_PER_GRAM,
   DEFAULT_IDR_PER_JPY,
@@ -85,7 +86,7 @@ export function ZakatCalculator({ locale, compact = false }: { locale: Locale; c
   const fieldCols = compact ? "grid gap-4" : "grid grid-cols-1 gap-4 sm:grid-cols-2";
 
   return (
-    <div className={cn("grid grid-cols-1 gap-6", !compact && "lg:grid-cols-[1fr_minmax(0,22rem)] lg:items-start")}>
+    <div {...(compact ? {} : aos("fade-up"))} className={cn("grid grid-cols-1 gap-6", !compact && "lg:grid-cols-[1fr_minmax(0,22rem)] lg:items-start")}>
       <div className="space-y-6">
         <div className="card-muted space-y-4 p-5">
           <div className={fieldCols}>

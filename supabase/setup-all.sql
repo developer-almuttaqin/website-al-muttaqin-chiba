@@ -2,13 +2,13 @@
 -- DIBUAT OTOMATIS oleh scripts/build-sql.mjs. Jangan diubah manual.
 --
 -- Cara pakai: Supabase Dashboard > SQL Editor > New query > tempel seluruh isi berkas ini > Run.
--- PROYEK BARU: sebelum Run, cari GANTI_KATA_SANDI_AWAL di bagian 5/5 dan ganti dengan kata sandi awal
+-- PROYEK BARU: sebelum Run, cari GANTI_KATA_SANDI_AWAL di bagian 6/6 dan ganti dengan kata sandi awal
 -- admin pilihan Anda (minimal 8 karakter). Bila akun admin sudah ada, bagian itu tidak perlu diubah.
 -- Aman dijalankan ulang kapan saja; data yang sudah diubah admin tidak ditimpa.
--- Isi: (1) skema + RLS, (2) kolom panel admin, (3) CMS + storage, (4) data awal, (5) akun admin.
+-- Isi: (1) skema + RLS, (2) kolom panel admin, (3) CMS + storage, (4) catatan push, (5) data awal, (6) akun admin.
 
 -- ==========================================================================
--- 1/5  Skema awal dan RLS (migrations/0001_init.sql)
+-- 1/6  Skema awal dan RLS (migrations/0001_init.sql)
 -- ==========================================================================
 
 -- Al Muttaqin Cultural Center: skema awal (PRD-02)
@@ -428,7 +428,7 @@ create index if not exists event_registrations_event_idx on event_registrations 
 
 
 -- ==========================================================================
--- 2/5  Panel admin (migrations/0002_admin.sql)
+-- 2/6  Panel admin (migrations/0002_admin.sql)
 -- ==========================================================================
 
 -- Panel admin (PRD-09): kolom & indeks tambahan. Tidak mengubah 0001.
@@ -462,7 +462,7 @@ create policy "admins update self" on admins for update using (id = auth.uid()) 
 
 
 -- ==========================================================================
--- 3/5  CMS, hitungan pendaftar, storage (migrations/0003_cms.sql)
+-- 3/6  CMS, hitungan pendaftar, storage (migrations/0003_cms.sql)
 -- ==========================================================================
 
 -- CMS panel admin: koleksi konten generik, pengaturan situs, hitungan pendaftar, dan batas unggahan.
@@ -660,7 +660,26 @@ grant execute on function media_paths_in_use(text[]) to authenticated, service_r
 
 
 -- ==========================================================================
--- 4/5  Data awal (seed.sql)
+-- 4/6  Catatan pengiriman push, anti notifikasi ganda (migrations/0004_push_sent_log.sql)
+-- ==========================================================================
+
+-- Catatan pengiriman push pengingat (PRD-07b): satu kejadian (tag, mis. adhan-dhuhr-2026-11-20)
+-- hanya dikirim sekali, walau /api/push/send dipanggil dua kali di menit yang sama (retry
+-- penjadwal, cron-job.org dan pg_cron aktif bersamaan, atau instance serverless berbeda).
+-- Idempoten: aman dijalankan ulang.
+create table if not exists push_sent_log (
+  tag text primary key,
+  sent_at timestamptz not null default now()
+);
+
+create index if not exists push_sent_log_sent_at_idx on push_sent_log (sent_at);
+
+-- Tanpa policy: hanya service role (server /api/push/send) yang dapat membaca dan menulis.
+alter table push_sent_log enable row level security;
+
+
+-- ==========================================================================
+-- 5/6  Data awal (seed.sql)
 -- ==========================================================================
 
 -- Data awal Al Muttaqin Cultural Center. DIBUAT OTOMATIS oleh scripts/build-sql.mjs dari src/data/*.
@@ -882,7 +901,7 @@ on conflict (collection, item_key) do nothing;
 
 
 -- ==========================================================================
--- 5/5  Akun admin pertama (admin-user.sql)
+-- 6/6  Akun admin pertama (admin-user.sql)
 -- ==========================================================================
 
 -- Akun admin pertama (super_admin) untuk panel /admin.

@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { BoardMember, Locale } from "@/lib/types";
 import { pick } from "@/lib/utils/i18n";
 import { shouldSkipOptimization } from "@/lib/utils/media";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 function initials(name: string): string {
   const clean = name.replace(/^PLACEHOLDER:\s*/i, "").trim();
@@ -14,15 +15,15 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
-/** Daftar pengurus dengan avatar inisial bila tanpa foto (PRD-03a). */
+/** Daftar pengurus dengan avatar inisial bila tanpa foto (PRD-03a). Kartu muncul bertahap per baris (AOS). */
 export function BoardGrid({ members, locale, placeholderLabel }: { members: BoardMember[]; locale: Locale; placeholderLabel: string }) {
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {members.map((m) => {
+      {members.map((m, i) => {
         const isPlaceholder = /^PLACEHOLDER:/i.test(m.name);
         const name = isPlaceholder ? placeholderLabel : m.name;
         return (
-          <li key={m.id} className="card-surface flex items-center gap-4 p-5">
+          <li key={m.id} {...aos("fade-up", { delay: stagger(i % 3) })} className="card-surface flex items-center gap-4 p-5">
             {m.photo ? (
               <Image src={m.photo} alt={name} width={56} height={56} unoptimized={shouldSkipOptimization(m.photo)} className="size-14 shrink-0 rounded-full object-cover" />
             ) : (

@@ -13,12 +13,16 @@ import { buttonVariants } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
 import { IconCircle } from "@/components/ui/primitives";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { aos, stagger } from "@/components/shared/aos-props";
 import type { DonationCurrency } from "@/components/donate/unique-amount";
 import { PaymentLogos } from "@/components/donate/payment-logos";
 
 const CURRENCIES: DonationCurrency[] = ["JPY", "IDR"];
 
-/** Tab mata uang kecil (client) yang menerima daftar rekening dari Server Component. */
+/**
+ * Tab mata uang kecil (client) yang menerima daftar rekening dari Server Component.
+ * Kartu rekening ber-AOS hanya di mode penuh; mode `compact` (beranda, App) tanpa animasi gulir.
+ */
 export function AccountTabs({
   accounts,
   locale,
@@ -48,8 +52,8 @@ export function AccountTabs({
               <p className="card-muted p-5 text-sm text-muted-foreground">{t("empty")}</p>
             ) : (
               <ul className={cn("grid grid-cols-1 gap-4", !compact && "lg:grid-cols-2")}>
-                {list.map((account) => (
-                  <li key={account.id}>
+                {list.map((account, i) => (
+                  <li key={account.id} {...(compact ? {} : aos("fade-up", { delay: stagger(i % 2) }))}>
                     <AccountCard account={account} locale={locale} compact={compact} />
                   </li>
                 ))}

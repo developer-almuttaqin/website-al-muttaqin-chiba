@@ -8,6 +8,7 @@ import { pick } from "@/lib/utils/i18n";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { IconCircle } from "@/components/ui/primitives";
 import { EventBrowser } from "@/components/activities";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 const ROUTINE_PROGRAMS: Program["id"][] = ["weekly-kajian", "tpa", "japanese-class"];
 
@@ -53,10 +54,10 @@ export default async function EventsPage({ params, searchParams }: { params: Pro
             {t("routine.tag")}
           </h2>
           <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {routine.map((p) => {
+            {routine.map((p, i) => {
               const Icon = PROGRAM_ICONS[p.icon];
               return (
-                <li key={p.id}>
+                <li key={p.id} {...aos("fade-up", { delay: stagger(i) })}>
                   <Link href={`/programs/${p.slug}`} className="card-surface lift group flex h-full flex-col gap-4 p-5">
                     <IconCircle tone="soft" shape="square">
                       <Icon />

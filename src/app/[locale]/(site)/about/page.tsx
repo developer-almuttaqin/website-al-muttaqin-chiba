@@ -14,6 +14,7 @@ import { IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { BoardGrid, FacilitiesGrid, PartnersStrip, StatsRow, Timeline } from "@/components/about";
 import { DocumentaryFeature } from "@/components/home/home-documentary";
 import { cn } from "@/lib/utils/cn";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -61,7 +62,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
             <SectionHeading tag={t("profile.tag")} title={t("profile.title")} highlight={t("profile.highlight")} />
-            <div className="relative mt-8 aspect-[4/3] overflow-hidden rounded-t-[999px] rounded-b-3xl border border-border shadow-soft">
+            <div {...aos("zoom-in", { delay: 80 })} className="relative mt-8 aspect-[4/3] overflow-hidden rounded-t-[999px] rounded-b-3xl border border-border shadow-soft">
               <Image
                 src="/images/masjid/masjid-al-muttaqin.jpg"
                 alt={pick(profile.name, locale)}
@@ -72,7 +73,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
               <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-hero/70 to-transparent" />
             </div>
           </div>
-          <div className="space-y-5 text-base leading-relaxed text-foreground/90 lg:col-span-7">
+          <div {...aos("fade-up", { delay: 120 })} className="space-y-5 text-base leading-relaxed text-foreground/90 lg:col-span-7">
             <p className="text-lg">{pick(profile.description, locale)}</p>
             <p>{t("profile.body")}</p>
             <p className="text-sm text-muted-foreground">{pick(profile.legalName, locale)}</p>
@@ -82,7 +83,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
 
       {/* Statistik */}
       <section className="container-site pb-12 lg:pb-16">
-        <StatsRow locale={locale} />
+        <StatsRow locale={locale} aos />
       </section>
 
       {/* Video dokumenter */}
@@ -97,7 +98,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             <div className="lg:col-span-5">
               <SectionHeading tag={t("vision.tag")} title={t("vision.title")} highlight={t("vision.highlight")} description={t("vision.statement")} />
             </div>
-            <div className="card-surface px-5 sm:px-6 lg:col-span-7">
+            <div {...aos("fade-up", { delay: 80 })} className="card-surface px-5 sm:px-6 lg:col-span-7">
               {PILLAR_ICONS.map((Icon, i) => (
                 <NumberedItem key={i} index={i + 1} title={t(`vision.pillars.${i}.title`)} description={t(`vision.pillars.${i}.description`)} icon={<Icon />} />
               ))}
@@ -122,7 +123,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <section className="bg-surface">
         <div className="container-site py-12 lg:py-16">
           <SectionHeading tag={t("partners.tag")} title={t("partners.title")} highlight={t("partners.highlight")} description={t("partners.description")} className="mb-8" />
-          <PartnersStrip locale={locale} />
+          <PartnersStrip locale={locale} aos />
         </div>
       </section>
 
@@ -143,7 +144,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       {/* Tata kelola & transparansi + relawan */}
       <section className="container-site py-12 lg:py-16">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="hero-surface rounded-2xl p-6 sm:p-8">
+          <div {...aos("zoom-in-up")} className="hero-surface rounded-2xl p-6 sm:p-8">
             <div className="relative">
               <IconCircle tone="inverse">
                 <Scale />
@@ -168,7 +169,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             </div>
           </div>
 
-          <div className="card-muted p-6 sm:p-8">
+          <div {...aos("zoom-in-up", { delay: stagger(1) })} className="card-muted p-6 sm:p-8">
             <IconCircle tone="brand">
               <HeartHandshake />
             </IconCircle>

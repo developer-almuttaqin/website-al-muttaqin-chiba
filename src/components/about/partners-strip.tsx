@@ -7,9 +7,13 @@ import { getProfile } from "@/lib/data";
 import { pick } from "@/lib/utils/i18n";
 import { shouldSkipOptimization } from "@/lib/utils/media";
 import { IconCircle } from "@/components/ui/primitives";
+import { aos as aosProps, stagger } from "@/components/shared/aos-props";
 
-/** Mitra pengelola dan pendukung (PRD-03a), dibaca dari `profile.partners`. */
-export async function PartnersStrip({ locale, className }: { locale: Locale; className?: string }) {
+/**
+ * Mitra pengelola dan pendukung (PRD-03a), dibaca dari `profile.partners`.
+ * `aos`: kartu muncul bertahap saat digulir (opt-in; matikan bila pembungkusnya sudah ber-data-aos).
+ */
+export async function PartnersStrip({ locale, aos = false, className }: { locale: Locale; aos?: boolean; className?: string }) {
   const [t, tc, profile] = await Promise.all([
     getTranslations({ locale, namespace: "about" }),
     getTranslations({ locale, namespace: "common" }),
@@ -18,7 +22,7 @@ export async function PartnersStrip({ locale, className }: { locale: Locale; cla
 
   return (
     <ul className={className ?? "grid grid-cols-1 gap-4 sm:grid-cols-3"}>
-      {profile.partners.map((p) => {
+      {profile.partners.map((p, i) => {
         const initials = p.name
           .split(/\s+/)
           .slice(0, 2)
@@ -26,7 +30,7 @@ export async function PartnersStrip({ locale, className }: { locale: Locale; cla
           .join("")
           .toUpperCase();
         return (
-          <li key={p.name} className="card-surface flex flex-col gap-4 p-6">
+          <li key={p.name} {...(aos ? aosProps("fade-up", { delay: stagger(i % 3) }) : {})} className="card-surface flex flex-col gap-4 p-6">
             {p.logo ? (
               <div className="flex h-20 items-center justify-center rounded-2xl border border-border bg-white px-6 py-3">
                 <Image src={p.logo.src} alt={p.name} width={p.logo.width} height={p.logo.height} unoptimized={shouldSkipOptimization(p.logo.src)} className="h-full w-auto max-w-full object-contain" />

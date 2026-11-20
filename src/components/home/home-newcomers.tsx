@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils/cn";
 import { buttonVariants } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { DictionarySearch } from "@/components/guides";
 import { HomeSection } from "./home-section";
 
@@ -30,8 +31,8 @@ export async function HomeNewcomers({ locale }: { locale: Locale }) {
         <div className="lg:col-span-7">
           <SectionHeading tag={t("newcomers.tag")} tri={{ ja: "千葉へようこそ" }} title={t("newcomers.title")} highlight={t("newcomers.highlight")} description={t("newcomers.description")} />
           <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {SHORTCUTS.map(({ key, href, icon: Icon }) => (
-              <li key={key}>
+            {SHORTCUTS.map(({ key, href, icon: Icon }, i) => (
+              <li key={key} {...aos("fade-up", { delay: stagger(i) })}>
                 <Link href={href} className="card-surface lift group flex h-full items-start gap-4 p-5 hover:shadow-soft">
                   <IconCircle tone="soft" shape="square">
                     <Icon />
@@ -51,7 +52,7 @@ export async function HomeNewcomers({ locale }: { locale: Locale }) {
           </Link>
         </div>
         <div className="lg:col-span-5">
-          <div className="rounded-3xl border border-border bg-background p-5 sm:p-6">
+          <div {...aos("fade-up", { delay: 80 })} className="rounded-3xl border border-border bg-background p-5 sm:p-6">
             <div className="flex items-start gap-3">
               <IconCircle size="sm" tone="brand">
                 <Languages />

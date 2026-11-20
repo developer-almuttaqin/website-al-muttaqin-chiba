@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils/cn";
 import { shouldSkipOptimization } from "@/lib/utils/media";
+import { aos as aosProps, stagger } from "@/components/shared/aos-props";
 
 type Category = GalleryItem["category"];
 const CATEGORIES: Category[] = ["building", "activity", "community", "ramadan", "eid"];
@@ -20,8 +21,21 @@ const SIZES = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
 /**
  * Galeri foto (PRD-03a): grid masonry responsif, filter kategori, dan lightbox `Dialog`
  * dengan navigasi tombol serta panah keyboard. `limit` menampilkan N item pertama tanpa filter.
+ * `aos`: foto muncul bertahap saat digulir (opt-in; matikan bila pembungkusnya sudah ber-data-aos).
  */
-export function GalleryGrid({ items, locale, limit, className }: { items: GalleryItem[]; locale: Locale; limit?: number; className?: string }) {
+export function GalleryGrid({
+  items,
+  locale,
+  limit,
+  aos = false,
+  className,
+}: {
+  items: GalleryItem[];
+  locale: Locale;
+  limit?: number;
+  aos?: boolean;
+  className?: string;
+}) {
   const t = useTranslations("gallery");
   const tc = useTranslations("common");
   const [category, setCategory] = React.useState<Category | "all">("all");
@@ -79,7 +93,7 @@ export function GalleryGrid({ items, locale, limit, className }: { items: Galler
           {visible.map((item, index) => {
             const alt = pick(item.alt, locale);
             return (
-              <li key={item.id}>
+              <li key={item.id} {...(aos ? aosProps("zoom-in", { delay: stagger(index % 3) }) : {})}>
                 <button
                   type="button"
                   onClick={() => setActive(index)}

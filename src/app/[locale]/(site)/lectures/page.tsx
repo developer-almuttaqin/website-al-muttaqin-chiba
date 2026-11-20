@@ -9,6 +9,7 @@ import { SectionTag } from "@/components/ui/section-tag";
 import { buttonVariants } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
 import { LectureBrowser, LiveStatusBanner } from "@/components/activities";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 const CHANNEL_KEYS = ["1", "2", "3"] as const;
 
@@ -52,8 +53,8 @@ export default async function LecturesPage({ params }: { params: Promise<{ local
           {t("channels.tag")}
         </h2>
         <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CHANNEL_KEYS.map((key) => (
-            <li key={key}>
+          {CHANNEL_KEYS.map((key, i) => (
+            <li key={key} {...aos("fade-up", { delay: stagger(i) })}>
               <a href={t(`channels.items.${key}.url`)} target="_blank" rel="noopener noreferrer" className="card-surface lift flex h-full flex-col gap-4 p-5">
                 <IconCircle tone="soft" shape="square">
                   <Tv />
@@ -73,7 +74,7 @@ export default async function LecturesPage({ params }: { params: Promise<{ local
         </ul>
       </section>
 
-      <section aria-labelledby="lectures-materials" className="card-muted flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <section aria-labelledby="lectures-materials" className="card-muted flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8" {...aos("zoom-in-up")}>
         <div className="flex items-start gap-4">
           <IconCircle tone="brand" size="lg">
             <FolderOpen />

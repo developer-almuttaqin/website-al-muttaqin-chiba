@@ -1,7 +1,7 @@
 /**
  * Membangun berkas SQL untuk Supabase dari sumber di repo:
  *   supabase/seed.sql       data awal (konten contoh di src/data) agar situs tidak kosong
- *   supabase/setup-all.sql  SATU berkas siap tempel di SQL Editor: migrasi 0001-0003 (dibuat
+ *   supabase/setup-all.sql  SATU berkas siap tempel di SQL Editor: migrasi 0001-0004 (dibuat
  *                           idempoten), seed, dan akun admin pertama
  * Jalankan: pnpm db:sql (ulang setiap kali migrasi atau data seed berubah).
  */
@@ -195,26 +195,34 @@ async function main() {
   await writeFile(path.join(supabaseDir, "seed.sql"), seedSql);
 
   const read = (file) => readFile(path.join(supabaseDir, file), "utf8");
-  const [init, admin, cms, adminUser] = await Promise.all([read("migrations/0001_init.sql"), read("migrations/0002_admin.sql"), read("migrations/0003_cms.sql"), read("admin-user.sql")]);
+  const [init, admin, cms, pushLog, adminUser] = await Promise.all([
+    read("migrations/0001_init.sql"),
+    read("migrations/0002_admin.sql"),
+    read("migrations/0003_cms.sql"),
+    read("migrations/0004_push_sent_log.sql"),
+    read("admin-user.sql"),
+  ]);
 
   const all = [
     "-- Al Muttaqin Cultural Center: penyiapan database Supabase dalam SATU berkas.",
     "-- DIBUAT OTOMATIS oleh scripts/build-sql.mjs. Jangan diubah manual.",
     "--",
     "-- Cara pakai: Supabase Dashboard > SQL Editor > New query > tempel seluruh isi berkas ini > Run.",
-    "-- PROYEK BARU: sebelum Run, cari GANTI_KATA_SANDI_AWAL di bagian 5/5 dan ganti dengan kata sandi awal",
+    "-- PROYEK BARU: sebelum Run, cari GANTI_KATA_SANDI_AWAL di bagian 6/6 dan ganti dengan kata sandi awal",
     "-- admin pilihan Anda (minimal 8 karakter). Bila akun admin sudah ada, bagian itu tidak perlu diubah.",
     "-- Aman dijalankan ulang kapan saja; data yang sudah diubah admin tidak ditimpa.",
-    "-- Isi: (1) skema + RLS, (2) kolom panel admin, (3) CMS + storage, (4) data awal, (5) akun admin.",
-    banner("1/5  Skema awal dan RLS (migrations/0001_init.sql)"),
+    "-- Isi: (1) skema + RLS, (2) kolom panel admin, (3) CMS + storage, (4) catatan push, (5) data awal, (6) akun admin.",
+    banner("1/6  Skema awal dan RLS (migrations/0001_init.sql)"),
     makeIdempotent(init),
-    banner("2/5  Panel admin (migrations/0002_admin.sql)"),
+    banner("2/6  Panel admin (migrations/0002_admin.sql)"),
     makeIdempotent(admin),
-    banner("3/5  CMS, hitungan pendaftar, storage (migrations/0003_cms.sql)"),
+    banner("3/6  CMS, hitungan pendaftar, storage (migrations/0003_cms.sql)"),
     cms,
-    banner("4/5  Data awal (seed.sql)"),
+    banner("4/6  Catatan pengiriman push, anti notifikasi ganda (migrations/0004_push_sent_log.sql)"),
+    pushLog,
+    banner("5/6  Data awal (seed.sql)"),
     seedSql,
-    banner("5/5  Akun admin pertama (admin-user.sql)"),
+    banner("6/6  Akun admin pertama (admin-user.sql)"),
     adminUser,
   ].join("\n");
   await writeFile(path.join(supabaseDir, "setup-all.sql"), all);

@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/primitives";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnnouncementItem } from "@/components/activities/announcement-list";
 import { NewsCard } from "@/components/activities/news-card";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 type FeedItem = { kind: "announcement"; item: Announcement } | { kind: "post"; item: NewsPost };
 
@@ -29,8 +30,8 @@ export function NewsBrowser({ announcements, posts, locale }: { announcements: A
       <EmptyState icon={<Newspaper />} title={t("labels.empty")} />
     ) : (
       <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {list.map((p) => (
-          <li key={p.id}>
+        {list.map((p, i) => (
+          <li key={p.id} {...aos("fade-up", { delay: stagger(i % 3) })}>
             <NewsCard post={p} locale={locale} />
           </li>
         ))}
@@ -49,8 +50,8 @@ export function NewsBrowser({ announcements, posts, locale }: { announcements: A
       <TabsContent value="all" className="space-y-8">
         {pinned.length > 0 && (
           <ul className="grid gap-3">
-            {pinned.map((a) => (
-              <AnnouncementItem key={a.id} announcement={a} locale={locale} />
+            {pinned.map((a, i) => (
+              <AnnouncementItem key={a.id} announcement={a} locale={locale} aos={aos("fade-up", { delay: stagger(i) })} />
             ))}
           </ul>
         )}
@@ -58,13 +59,13 @@ export function NewsBrowser({ announcements, posts, locale }: { announcements: A
           <EmptyState icon={<Newspaper />} title={t("labels.empty")} />
         ) : (
           <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {rest.map((entry) =>
+            {rest.map((entry, i) =>
               entry.kind === "post" ? (
-                <li key={`p-${entry.item.id}`}>
+                <li key={`p-${entry.item.id}`} {...aos("fade-up", { delay: stagger(i % 3) })}>
                   <NewsCard post={entry.item} locale={locale} />
                 </li>
               ) : (
-                <AnnouncementItem key={`a-${entry.item.id}`} announcement={entry.item} locale={locale} />
+                <AnnouncementItem key={`a-${entry.item.id}`} announcement={entry.item} locale={locale} aos={aos("fade-up", { delay: stagger(i % 3) })} />
               ),
             )}
           </ul>
@@ -76,8 +77,8 @@ export function NewsBrowser({ announcements, posts, locale }: { announcements: A
           <EmptyState icon={<Newspaper />} title={t("labels.empty")} />
         ) : (
           <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-            {[...pinned, ...announcements.filter((a) => !a.pinned)].map((a) => (
-              <AnnouncementItem key={a.id} announcement={a} locale={locale} />
+            {[...pinned, ...announcements.filter((a) => !a.pinned)].map((a, i) => (
+              <AnnouncementItem key={a.id} announcement={a} locale={locale} aos={aos("fade-up", { delay: stagger(i % 2) })} />
             ))}
           </ul>
         )}

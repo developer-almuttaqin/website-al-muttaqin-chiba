@@ -1,13 +1,33 @@
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { CacheFirst, CacheableResponsePlugin, ExpirationPlugin, NetworkFirst, RangeRequestsPlugin, Serwist, StaleWhileRevalidate } from "serwist";
-import { SW_REMINDER_MESSAGE, type ReminderPushPayload, type SwReminderMessage } from "@/components/pwa/reminder-message";
+import { claimReminder } from "@/components/pwa/fired-store";
+import {
+  ADHAN_VIBRATE,
+  APP_PATH,
+  NOTIFY_BADGE,
+  NOTIFY_ICON,
+  REMINDER_FRESH_MS,
+  REMINDER_VIBRATE,
+  SW_NAVIGATE,
+  SW_REMINDER_MESSAGE,
+  SW_REMINDER_STOP,
+  SW_REPLY_TIMEOUT_MS,
+  isPrayerKind,
+  payloadNotifyTime,
+  type ReminderPushPayload,
+  type SwNavigateMessage,
+  type SwReminderMessage,
+  type SwReminderReply,
+  type SwReminderStopMessage,
+} from "@/components/pwa/reminder-message";
 
 /**
  * Service worker App Jamaah (PRD-07 / §7 Offline):
  * - precache halaman inti App & fallback offline untuk ketiga bahasa,
  * - cache runtime untuk API Al-Qur'an, jadwal salat, dan halaman (network-first),
- * - notifikasi push adzan (payload dari /api/push/send).
+ * - notifikasi push adzan (payload dari /api/push/send): satu notifikasi per waktu salat,
+ *   suara khas di App bila sedang terlihat, dan klik notifikasi hanya membuka/mengarahkan App.
  */
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -104,11 +124,20 @@ serwist.addEventListeners();
 // ---------------------------------------------------------------
 // Notifikasi push pengingat (Web Push VAPID). Payload JSON: ReminderPushPayload
 // { title, body, url, tag, kind?, prayer?, at?, actions? }.
-// Browser tidak mengizinkan suara kustom untuk notifikasi latar belakang; suara adzan
-// diputar oleh halaman App bila sedang terbuka (pesan SW_REMINDER_MESSAGE ke jendela).
+//
+// - Setiap tag diklaim di catatan bersama SW & halaman (fired-store): bila pengingat lokal App
+//   (atau push ganda dari penjadwal) sudah menanganinya, notifikasi hanya diganti diam-diam,
+//   tidak berbunyi/bergetar lagi -> satu kejadian, satu notifikasi.
+// - Paling banyak SATU notifikasi waktu salat tampil: yang lama ditutup saat yang baru datang.
+// - Halaman App (/[locale]/app) sedang terlihat: SW meminta halaman memutar suara khas (adzan /
+//   jingle) dan menampilkan banner, lalu MENUNGGU jawabannya. Hanya bila halaman menjawab "sudah
+//   ditangani" (suara berbunyi / pengguna memilih senyap), notifikasi sistem dibuat senyap (Safari
+//   wajib menampilkan notifikasi untuk setiap push) atau dilewati (Chromium/Firefox). Bila suara
+//   diblokir (App belum diketuk), tidak ada jawaban, atau yang terlihat halaman situs biasa, notifikasi
+//   sistem tampil bersuara seperti biasa.
+// - Browser tidak mengizinkan suara kustom untuk notifikasi saat App tertutup; perangkat memakai
+//   suara notifikasi standarnya.
 // ---------------------------------------------------------------
-const ADHAN_VIBRATE = [600, 250, 600, 250, 900];
-const REMINDER_VIBRATE = [250, 120, 250];
 
 function parsePayload(data: PushMessageData): ReminderPushPayload {
   try {
@@ -117,30 +146,47 @@ function parsePayload(data: PushMessageData): ReminderPushPayload {
       title: raw.title ?? "Al Muttaqin",
       body: raw.body ?? "",
       url: raw.url ?? "/id/app",
-      tag: raw.tag ?? "adzan",
+      tag: raw.tag ?? `acc-${Date.now()}`,
       kind: raw.kind,
       prayer: raw.prayer,
       at: raw.at,
+      notifyAt: raw.notifyAt,
       actions: raw.actions,
     };
   } catch {
-    return { title: "Al Muttaqin", body: data.text(), url: "/id/app", tag: "adzan" };
+    return { title: "Al Muttaqin", body: data.text(), url: "/id/app", tag: `acc-${Date.now()}`, kind: "broadcast" };
   }
 }
 
-async function showReminder(payload: ReminderPushPayload): Promise<void> {
+/** Safari (iOS/iPadOS/macOS): setiap push wajib menampilkan notifikasi, walau App sedang terbuka. */
+function requiresVisibleNotification(): boolean {
+  const ua = self.navigator.userAgent;
+  return /AppleWebKit/.test(ua) && !/Chrome|Chromium|CriOS|Android|Edg|Firefox|FxiOS/.test(ua);
+}
+
+/** Tutup notifikasi waktu salat lain agar paling banyak satu yang tampil. */
+async function closeOtherPrayerNotifications(keepTag: string): Promise<void> {
+  const list = await self.registration.getNotifications().catch(() => [] as Notification[]);
+  for (const n of list) {
+    const kind = (n.data as { kind?: ReminderPushPayload["kind"] } | null)?.kind;
+    if (n.tag !== keepTag && isPrayerKind(kind)) n.close();
+  }
+}
+
+async function showReminder(payload: ReminderPushPayload, quiet: boolean): Promise<void> {
   const isAdhan = payload.kind === "adhan";
-  const isReminder = isAdhan || payload.kind === "iqamah" || payload.kind === "jumuah";
-  // Notifikasi dengan tag sama sudah tampil (mis. dari pengingat lokal App): ganti tanpa berbunyi lagi.
-  const existing = await self.registration.getNotifications({ tag: payload.tag }).catch(() => [] as Notification[]);
+  const prayer = isPrayerKind(payload.kind);
   const options: NotificationOptions & { renotify?: boolean; vibrate?: number[]; actions?: { action: string; title: string }[]; timestamp?: number } = {
     body: payload.body,
-    icon: "/icons/icon-192.png",
-    badge: "/icons/icon-192.png",
+    icon: NOTIFY_ICON,
+    badge: NOTIFY_BADGE,
     tag: payload.tag,
-    renotify: existing.length === 0,
-    requireInteraction: isAdhan,
-    vibrate: isAdhan ? ADHAN_VIBRATE : isReminder ? REMINDER_VIBRATE : undefined,
+    lang: payload.url.match(/^\/(ja|en|id)(\/|$)/)?.[1],
+    // renotify & silent tidak boleh sama-sama true (TypeError).
+    renotify: !quiet,
+    silent: quiet,
+    requireInteraction: isAdhan && !quiet,
+    vibrate: quiet ? undefined : isAdhan ? ADHAN_VIBRATE : prayer ? REMINDER_VIBRATE : undefined,
     timestamp: payload.at ? Date.parse(payload.at) : Date.now(),
     data: { url: payload.url, kind: payload.kind, tag: payload.tag },
   };
@@ -150,35 +196,112 @@ async function showReminder(payload: ReminderPushPayload): Promise<void> {
       { action: "dismiss", title: payload.actions.dismiss },
     ];
   }
+  if (prayer) await closeOtherPrayerNotifications(payload.tag);
   await self.registration.showNotification(payload.title, options);
 }
 
-/** Beri tahu jendela App yang terbuka agar memutar suara adzan & menampilkan banner. */
-async function notifyClients(payload: ReminderPushPayload): Promise<void> {
-  const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-  const message: SwReminderMessage = { type: SW_REMINDER_MESSAGE, payload };
-  for (const client of clients) client.postMessage(message);
+async function windowClients(): Promise<WindowClient[]> {
+  const list = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  return list.filter((c) => new URL(c.url).origin === self.location.origin);
+}
+
+function isAppWindow(c: WindowClient): boolean {
+  return APP_PATH.test(new URL(c.url).pathname);
+}
+
+/** Minta halaman App membunyikan pengingat; true hanya bila halaman menjawab sudah menanganinya. */
+function askApp(client: WindowClient, message: SwReminderMessage): Promise<boolean> {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const timer = setTimeout(() => resolve(false), SW_REPLY_TIMEOUT_MS);
+    channel.port1.onmessage = (e: MessageEvent) => {
+      clearTimeout(timer);
+      resolve(Boolean((e.data as Partial<SwReminderReply> | null)?.handled));
+    };
+    try {
+      client.postMessage(message, [channel.port2]);
+    } catch {
+      clearTimeout(timer);
+      resolve(false);
+    }
+  });
+}
+
+async function handlePush(payload: ReminderPushPayload): Promise<void> {
+  const receivedAt = Date.now();
+  const first = await claimReminder(payload.tag, "push");
+  const windows = await windowClients();
+  // Hanya layar App yang memasang pendengar pengingat; halaman situs/admin tidak dihitung.
+  const visibleApps = windows.filter((c) => c.visibilityState === "visible" && isAppWindow(c));
+  const target = visibleApps.find((c) => c.focused) ?? visibleApps[0];
+  // Hanya kejadian yang baru saja terjadi yang dibunyikan di App (bukan push yang tertunda lama).
+  const notifyTime = payloadNotifyTime(payload) ?? receivedAt;
+  const fresh = receivedAt - notifyTime < REMINDER_FRESH_MS;
+  let handledInApp = false;
+  if (first && target && fresh) {
+    handledInApp = await askApp(target, { type: SW_REMINDER_MESSAGE, payload, receivedAt });
+  }
+  const webkit = requiresVisibleNotification();
+  // Sudah berbunyi di App yang terlihat: Chromium/Firefox tidak butuh notifikasi sistem.
+  if (handledInApp && !webkit) return;
+  // Kejadian ini sudah ditangani sebelumnya (pengingat lokal / push ganda) dan App sedang terlihat:
+  // jangan menambah salinan senyap di baki notifikasi.
+  if (!first && target && !webkit) return;
+  await showReminder(payload, !first || handledInApp);
 }
 
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   const payload = parsePayload(event.data);
-  event.waitUntil(Promise.all([showReminder(payload), notifyClients(payload).catch(() => undefined)]));
+  event.waitUntil(handlePush(payload).catch(() => showReminder(payload, false)));
 });
 
+async function broadcastStop(tag: string | undefined): Promise<void> {
+  if (!tag) return;
+  const message: SwReminderStopMessage = { type: SW_REMINDER_STOP, tag };
+  for (const client of await windowClients()) client.postMessage(message);
+}
+
+/**
+ * Klik notifikasi: cukup buka / arahkan App ke halaman tujuan. Pilih jendela yang sedang dipakai,
+ * lalu jendela App mana pun; bila tidak ada, buka jendela baru (di Android diarahkan ke App
+ * terpasang). Tidak memutar suara apa pun: App yang baru dibuka tidak membunyikan kejadian lampau.
+ */
+async function openApp(url: string): Promise<void> {
+  const target = new URL(url, self.location.origin);
+  const windows = await windowClients();
+  const client = windows.find((c) => c.focused) ?? windows.find((c) => c.visibilityState === "visible") ?? windows.find(isAppWindow);
+  if (!client) {
+    await self.clients.openWindow(target.href);
+    return;
+  }
+  const focused = await client.focus().catch(() => client);
+  const current = new URL(focused.url);
+  if (current.pathname === target.pathname && current.search === target.search) return;
+  const message: SwNavigateMessage = { type: SW_NAVIGATE, url: target.pathname + target.search + target.hash };
+  // Sudah di dalam App: pindah lewat router halaman (navigasi lunak) agar adzan yang sedang
+  // berbunyi beserta bannernya tidak terputus oleh muat ulang dokumen.
+  if (APP_PATH.test(current.pathname) && APP_PATH.test(target.pathname)) {
+    focused.postMessage(message);
+    return;
+  }
+  const navigated = await focused.navigate(target.href).catch(() => null);
+  // Jendela belum dikendalikan SW (navigate ditolak): minta halaman pindah sendiri.
+  if (!navigated) focused.postMessage(message);
+}
+
 self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  if (event.action === "dismiss") return;
-  const target = (event.notification.data as { url?: string } | undefined)?.url ?? "/id/app";
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clients) => {
-      for (const client of clients) {
-        if ("focus" in client) {
-          await client.navigate(target).catch(() => null);
-          return client.focus();
-        }
-      }
-      return self.clients.openWindow(target);
-    }),
-  );
+  const notification = event.notification;
+  notification.close();
+  const data = notification.data as { url?: string; tag?: string } | undefined;
+  if (event.action === "dismiss") {
+    event.waitUntil(broadcastStop(data?.tag ?? notification.tag));
+    return;
+  }
+  event.waitUntil(openApp(data?.url ?? "/id/app"));
+});
+
+self.addEventListener("notificationclose", (event) => {
+  const data = event.notification.data as { tag?: string } | undefined;
+  event.waitUntil(broadcastStop(data?.tag ?? event.notification.tag));
 });

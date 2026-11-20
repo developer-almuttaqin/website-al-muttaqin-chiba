@@ -13,6 +13,7 @@ import { NAV_GROUPS } from "@/components/site/nav-config";
 import { LogoMark } from "@/components/site/logo";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 const DEKATLOKAL_URL = "https://dekatlokal.com";
 
@@ -27,12 +28,13 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   const year = new Date().getFullYear();
   const groupsLeft = NAV_GROUPS.filter((g) => g.key === "worship" || g.key === "learn");
   const groupsRight = NAV_GROUPS.filter((g) => g.key === "community" || g.key === "support" || g.key === "about");
+  const groupCount = groupsLeft.length + groupsRight.length;
 
   return (
     <footer className="bg-hero text-hero-foreground pattern-shippo mt-24">
       <div className="container-site py-16">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-          <div className="lg:col-span-4">
+          <div {...aos("fade-up")} className="lg:col-span-4">
             <div className="flex items-center gap-3">
               <LogoMark tone="inverse" className="size-14" />
               <div>
@@ -70,8 +72,8 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-5">
-            {[...groupsLeft, ...groupsRight].map((g) => (
-              <div key={g.key} className={cn(g.key === "about" && "sm:col-start-3")}>
+            {[...groupsLeft, ...groupsRight].map((g, i) => (
+              <div key={g.key} {...aos("fade-up", { delay: stagger(i + 1) })} className={cn(g.key === "about" && "sm:col-start-3")}>
                 <p className="mb-3 text-xs font-semibold tracking-wide text-hero-muted uppercase">{tn(`groups.${g.key}`)}</p>
                 <ul className="space-y-2">
                   {g.links.map((l) => (
@@ -86,7 +88,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
             ))}
           </div>
 
-          <div className="lg:col-span-3">
+          <div {...aos("fade-up", { delay: stagger(groupCount + 1) })} className="lg:col-span-3">
             <p className="mb-3 text-xs font-semibold tracking-wide text-hero-muted uppercase">{t("contact")}</p>
             <ul className="space-y-3 text-sm">
               <li className="flex gap-3">

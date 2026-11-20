@@ -9,6 +9,7 @@ import { AppScreenHeader } from "@/components/app/shell";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { AddToCalendar, EventCard } from "@/components/activities";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -29,8 +30,8 @@ export default async function AppAgendaPage({ params }: { params: Promise<{ loca
         <EmptyState icon={<CalendarDays />} title={t("app.empty")} />
       ) : (
         <ul className="grid gap-4">
-          {upcoming.map((e) => (
-            <li key={e.id} className="space-y-2">
+          {upcoming.map((e, i) => (
+            <li key={e.id} {...aos("fade-up", { delay: stagger(i, 50, 200) })} className="space-y-2">
               <EventCard event={e} locale={locale} compact past={false} />
               <AddToCalendar event={e} locale={locale} siteUrl={siteUrl} className="px-1" />
             </li>

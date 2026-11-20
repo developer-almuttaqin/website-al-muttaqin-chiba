@@ -11,6 +11,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { IconCircle } from "@/components/ui/primitives";
 import { HalalRadar, HaramKanjiSearch } from "@/components/guides";
 import { cn } from "@/lib/utils/cn";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 type LabelItem = { term: string; reading: string; meaning: string };
 type LinkItem = { name: string; detail: string; url: string };
@@ -59,7 +60,7 @@ export default async function HalalPage({ params }: { params: Promise<{ locale: 
 
       <section id="kanji" className="container-site scroll-mt-24 py-12 lg:py-16">
         <SectionHeading tag={t("search.tag")} title={t("search.title")} description={t("search.description")} />
-        <div className="mt-8">
+        <div {...aos("fade-up")} className="mt-8">
           <HaramKanjiSearch items={ingredients} locale={locale} />
         </div>
       </section>
@@ -68,8 +69,8 @@ export default async function HalalPage({ params }: { params: Promise<{ locale: 
         <div className="container-site">
           <SectionHeading tag={t("labels.tag")} title={t("labels.title")} description={t("labels.description")} />
           <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {labelItems.map((item) => (
-              <li key={item.term} className="card-surface flex flex-col gap-2 p-5">
+            {labelItems.map((item, i) => (
+              <li key={item.term} {...aos("fade-up", { delay: stagger(i % 4) })} className="card-surface flex flex-col gap-2 p-5">
                 <p lang="ja" className="headline text-3xl">
                   {item.term}
                 </p>
@@ -78,7 +79,7 @@ export default async function HalalPage({ params }: { params: Promise<{ locale: 
               </li>
             ))}
           </ul>
-          <Card variant="brand" className="mt-6">
+          <Card {...aos("fade-up")} variant="brand" className="mt-6">
             <p className="text-sm leading-relaxed">{t("labels.tip")}</p>
           </Card>
         </div>
@@ -97,8 +98,8 @@ export default async function HalalPage({ params }: { params: Promise<{ locale: 
           }
         />
         <ul className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-          {foodPhrases.map((entry) => (
-            <li key={entry.id} className="card-surface flex flex-col gap-2 p-5">
+          {foodPhrases.map((entry, i) => (
+            <li key={entry.id} {...aos("fade-up", { delay: stagger(i % 2) })} className="card-surface flex flex-col gap-2 p-5">
               <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                 <span lang="ja">{entry.japanese}</span> · {pick(entry.meaning, locale)}
               </p>
@@ -118,7 +119,8 @@ export default async function HalalPage({ params }: { params: Promise<{ locale: 
       <section id="radar" className="scroll-mt-24 bg-surface/60 py-12 lg:py-16">
         <div className="container-site">
           <SectionHeading tag={t("radar.tag")} title={t("radar.title")} description={t("radar.description")} />
-          <div className="mt-8">
+          {/* `fade` (tanpa geser) agar tautan /halal#id mendarat tepat di tempatnya. */}
+          <div {...aos("fade")} className="mt-8">
             <HalalRadar places={places} locale={locale} center={profile.coordinates} whatsapp={profile.whatsapp} />
           </div>
         </div>
@@ -127,7 +129,7 @@ export default async function HalalPage({ params }: { params: Promise<{ locale: 
       <section id="resources" className="container-site scroll-mt-24 py-12 lg:py-16">
         <SectionHeading tag={t("cards.tag")} title={t("cards.title")} />
         <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Card>
+          <Card {...aos("fade-up")}>
             <div className="flex items-center gap-3">
               <IconCircle tone="soft" size="sm">
                 <UtensilsCrossed />
@@ -152,7 +154,7 @@ export default async function HalalPage({ params }: { params: Promise<{ locale: 
               ))}
             </ul>
           </Card>
-          <Card>
+          <Card {...aos("fade-up", { delay: stagger(1) })}>
             <div className="flex items-center gap-3">
               <IconCircle tone="soft" size="sm">
                 <Smartphone />

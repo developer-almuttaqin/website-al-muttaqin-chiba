@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Carousel, CarouselItem } from "@/components/ui/carousel";
 import { EmptyState } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos } from "@/components/shared/aos-props";
 import { LectureCard } from "@/components/activities";
 import { HomeSection } from "./home-section";
 
@@ -44,7 +45,7 @@ export async function HomeLectures({ locale }: { locale: Locale }) {
           </div>
         }
       />
-      <div className="mt-10">
+      <div {...aos("fade-up")} className="mt-10">
         {lectures.length === 0 ? (
           <EmptyState icon={<Tv />} title={t("lectures.empty")} />
         ) : (

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { SwitchRow } from "@/components/ui/switch";
+import { aos } from "@/components/shared/aos-props";
 import { readJson, useStoredJson, writeJson } from "./storage";
 import { lastDateKeys } from "./utils";
 
@@ -466,7 +467,7 @@ export function TasbihCounter({ locale }: { locale: Locale }) {
       </section>
 
       {/* Pilihan dzikir */}
-      <section className="card-muted flex flex-col gap-3 p-4">
+      <section {...aos("fade-up")} className="card-muted flex flex-col gap-3 p-4">
         <p className="text-xs font-semibold text-muted-foreground">{t("presets.label")}</p>
         <div className="grid grid-cols-2 gap-2" role="group" aria-label={t("presets.label")}>
           {PRESETS.map((p) => {
@@ -494,7 +495,7 @@ export function TasbihCounter({ locale }: { locale: Locale }) {
       </section>
 
       {/* Target & pengaturan */}
-      <section className="card-muted flex flex-col gap-3 p-4">
+      <section {...aos("fade-up")} className="card-muted flex flex-col gap-3 p-4">
         <p className="text-xs font-semibold text-muted-foreground">{t("targetLabel")}</p>
         <div className="flex flex-wrap gap-2" role="group" aria-label={t("targetLabel")}>
           {TARGETS.map((n) => (
@@ -546,7 +547,7 @@ export function TasbihCounter({ locale }: { locale: Locale }) {
       </section>
 
       {/* Statistik & riwayat */}
-      <section className="card-surface flex flex-col gap-3 p-4">
+      <section {...aos("fade-up")} className="card-surface flex flex-col gap-3 p-4">
         <div className="flex items-baseline justify-between">
           <h2 className="text-sm font-bold">{t("stats.week")}</h2>
           <span className="text-xs text-muted-foreground">{t("stats.weekTotal", { count: formatNumber(weekTotal, locale) })}</span>

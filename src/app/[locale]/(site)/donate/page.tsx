@@ -8,6 +8,7 @@ import { pick } from "@/lib/utils/i18n";
 import { buttonVariants } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos } from "@/components/shared/aos-props";
 import {
   DonationAccountsList,
   DonationFaq,
@@ -47,7 +48,7 @@ export default async function DonatePage({ params }: { params: Promise<{ locale:
         <div className="container-site relative py-16 lg:py-24">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-center">
             <div>
-              <SectionHeading as="h1" tone="inverse" tag={t("hero.tag")} tri={{ ja: "寄付", ar: "إنفاق" }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
+              <SectionHeading as="h1" tone="inverse" aos={false} tag={t("hero.tag")} tri={{ ja: "寄付", ar: "إنفاق" }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/donate#accounts" className={buttonVariants({ variant: "inverse", size: "lg" })}>
                   {t("hero.primaryCta")}
@@ -88,7 +89,7 @@ export default async function DonatePage({ params }: { params: Promise<{ locale:
         <section id="recurring" className="space-y-8" aria-labelledby="recurring-title">
           <SectionHeading tag={t("recurring.tag")} title={t("recurring.title")} highlight={t("recurring.highlight")} description={t("recurring.description")} />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,20rem)_1fr] lg:items-start">
-            <ul className="card-muted space-y-4 p-5">
+            <ul {...aos("fade-up")} className="card-muted space-y-4 p-5">
               {(["1", "2", "3"] as const).map((k) => (
                 <li key={k} className="flex items-start gap-3 text-sm leading-relaxed">
                   <IconCircle tone="soft" size="sm">
@@ -105,12 +106,12 @@ export default async function DonatePage({ params }: { params: Promise<{ locale:
         <GatewayCard locale={locale} />
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
-          <section className="hero-surface rounded-2xl p-6 sm:p-8" aria-labelledby="zakat-teaser-title">
+          <section {...aos("zoom-in-up")} className="hero-surface rounded-2xl p-6 sm:p-8" aria-labelledby="zakat-teaser-title">
             <div className="relative">
               <IconCircle tone="inverse" size="lg">
                 <Calculator />
               </IconCircle>
-              <SectionHeading as="h2" tone="inverse" tag={t("zakatTeaser.tag")} title={t("zakatTeaser.title")} highlight={t("zakatTeaser.highlight")} description={t("zakatTeaser.description")} className="mt-5" />
+              <SectionHeading as="h2" tone="inverse" tag={t("zakatTeaser.tag")} title={t("zakatTeaser.title")} highlight={t("zakatTeaser.highlight")} description={t("zakatTeaser.description")} className="mt-5" aos={false} />
               <Link href="/donate/zakat" className={`${buttonVariants({ variant: "inverse", size: "lg" })} mt-6`}>
                 {t("zakatTeaser.cta")}
                 <ArrowRight />

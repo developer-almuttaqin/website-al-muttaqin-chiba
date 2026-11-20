@@ -6,6 +6,7 @@ import { getDictionary } from "@/lib/data";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { NumberedItem } from "@/components/ui/primitives";
 import { DictionarySearch } from "@/components/guides";
+import { aos } from "@/components/shared/aos-props";
 
 type Tip = { name: string; detail: string };
 const TIP_ICONS = [Maximize2, Copy, Volume2];
@@ -31,14 +32,15 @@ export default async function DictionaryPage({ params }: { params: Promise<{ loc
         </div>
       </section>
 
-      <section className="container-site py-12 lg:py-16">
+      {/* `fade` (tanpa geser) agar tautan /dictionary#id mendarat tepat di entrinya. */}
+      <section {...aos("fade")} className="container-site py-12 lg:py-16">
         <DictionarySearch entries={entries} locale={locale} />
       </section>
 
       <section className="bg-surface/60 py-12 lg:py-16">
         <div className="container-site">
           <SectionHeading tag={t("tips.tag")} title={t("tips.title")} />
-          <div className="card-surface mt-8 px-5 sm:px-6">
+          <div {...aos("fade-up")} className="card-surface mt-8 px-5 sm:px-6">
             {tips.map((tip, i) => {
               const Icon = TIP_ICONS[i] ?? Maximize2;
               return <NumberedItem key={tip.name} index={i + 1} title={tip.name} description={tip.detail} icon={<Icon />} />;

@@ -7,6 +7,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { InstagramIcon } from "@/components/site/social-icons";
 import { GalleryGrid } from "@/components/about";
+import { aos } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -30,13 +31,13 @@ export default async function GalleryPage({ params }: { params: Promise<{ locale
       <SectionHeading as="h1" tag={t("hero.tag")} tri={{ ja: "ギャラリー", ar: "معرض الصور" }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
 
       <div className="mt-10">
-        <GalleryGrid items={items} locale={locale} />
+        <GalleryGrid items={items} locale={locale} aos />
       </div>
 
       <p className="mt-6 text-xs text-muted-foreground">{t("placeholderNote")}</p>
 
       {profile.social.instagram && (
-        <section className="hero-surface mt-16 rounded-2xl p-6 sm:p-10 lg:mt-20">
+        <section {...aos("zoom-in-up")} className="hero-surface mt-16 rounded-2xl p-6 sm:p-10 lg:mt-20">
           <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-xl">
               <p className="text-xs font-semibold tracking-wide text-hero-muted uppercase">{t("instagram.tag")}</p>

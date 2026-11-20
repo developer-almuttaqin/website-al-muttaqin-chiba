@@ -16,6 +16,7 @@ import { HijriDateBadge, PrayerTimesTable, PrayerTodayCard } from "@/components/
 import { PrintButton } from "@/components/prayer/print-button";
 import { TimeCountdown } from "@/components/prayer/time-countdown";
 import { duhaFrom, imsakFrom, monthKey, resolveMonth, shiftMonth } from "@/components/prayer/prayer-utils";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 /** Tanggal "hari ini" dan hitungan bulan bergantung jam server; jangan diprerender saat build. */
 export const dynamic = "force-dynamic";
@@ -65,7 +66,7 @@ export default async function PrayerTimesPage({ params, searchParams }: PageProp
         <div className="container-site relative py-12 lg:py-16">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:items-center">
             <div className="animate-fade-up">
-              <SectionHeading as="h1" tone="inverse" tag={t("hero.tag")} tri={{ ja: tc("triScript.ja"), ar: tc("triScript.ar") }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
+              <SectionHeading as="h1" tone="inverse" aos={false} tag={t("hero.tag")} tri={{ ja: tc("triScript.ja"), ar: tc("triScript.ar") }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
               <div className="mt-6">
                 <HijriDateBadge locale={locale} tone="inverse" withArabic />
               </div>
@@ -89,9 +90,9 @@ export default async function PrayerTimesPage({ params, searchParams }: PageProp
 
       {ramadan && (
         <section className="container-site pt-12 lg:pt-16 print:hidden">
-          <Card variant="dark" className="grid grid-cols-1 gap-6 rounded-3xl p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-center">
+          <Card variant="dark" className="grid grid-cols-1 gap-6 rounded-3xl p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-center" {...aos("zoom-in-up")}>
             <div>
-              <SectionHeading tone="inverse" tag={t("ramadan.tag")} title={t("ramadan.title")} highlight={t("ramadan.highlight")} description={t("ramadan.description")} />
+              <SectionHeading tone="inverse" aos={false} tag={t("ramadan.tag")} title={t("ramadan.title")} highlight={t("ramadan.highlight")} description={t("ramadan.description")} />
               <dl className="mt-6 grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-hero-foreground/15 bg-hero-foreground/5 p-4">
                   <dt className="flex items-center gap-2 text-xs font-semibold tracking-wide text-hero-muted uppercase">
@@ -140,15 +141,15 @@ export default async function PrayerTimesPage({ params, searchParams }: PageProp
         <h2 className="hidden text-xl font-bold print:block">
           {profile.shortName} · {t("table.caption", { month: monthLabel })}
         </h2>
-        <div className="mt-8 print:mt-4">
+        <div className="mt-8 print:mt-4" {...aos("fade-up")}>
           <PrayerTimesTable locale={locale} year={year} month={month} />
         </div>
       </section>
 
       <section className="container-site pb-12 lg:pb-16 print:hidden">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <Card variant="muted" className="rounded-3xl">
-            <SectionHeading as="h3" tag={t("guide.tag")} title={t("guide.title")} highlight={t("guide.highlight")} />
+          <Card variant="muted" className="rounded-3xl" {...aos("fade-up")}>
+            <SectionHeading as="h3" aos={false} tag={t("guide.tag")} title={t("guide.title")} highlight={t("guide.highlight")} />
             <dl className="mt-6 divide-y divide-border">
               <GuideRow icon={<Calculator />} term={t("guide.method")} detail={METHOD_LABELS[config.method]} />
               <GuideRow icon={<Sun />} term={t("guide.madhab")} detail={config.madhab === "hanafi" ? t("guide.hanafi") : t("guide.shafi")} />
@@ -179,8 +180,8 @@ export default async function PrayerTimesPage({ params, searchParams }: PageProp
             </div>
           </Card>
 
-          <Card className="rounded-3xl">
-            <SectionHeading as="h3" tag={t("sunnah.tag")} title={t("sunnah.title")} highlight={t("sunnah.highlight")} description={t("sunnah.description")} />
+          <Card className="rounded-3xl" {...aos("fade-up", { delay: stagger(1) })}>
+            <SectionHeading as="h3" aos={false} tag={t("sunnah.tag")} title={t("sunnah.title")} highlight={t("sunnah.highlight")} description={t("sunnah.description")} />
             <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
               <SunnahTile icon={<Moon />} title={t("sunnah.midnight")} hint={t("sunnah.midnightHint")} time={formatTime(today.sunnah.middleOfTheNight, locale)} />
               <SunnahTile icon={<MoonStar />} title={t("sunnah.lastThird")} hint={t("sunnah.lastThirdHint")} time={formatTime(today.sunnah.lastThirdOfTheNight, locale)} />

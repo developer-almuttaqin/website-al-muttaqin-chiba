@@ -17,5 +17,15 @@
   as the prayer-time call to prayer.
 
 The file names include "madinah" so service workers that cached the previous recording
-fetch the new one. The chime and tasbih click sounds are generated in the browser with the
-Web Audio API and are not recordings.
+fetch the new one. The tasbih click sounds are generated in the browser with the Web Audio API
+and are not recordings.
+
+## notify-jingle.m4a, notify-jingle.wav
+
+- Original signature notification jingle of Al Muttaqin Cultural Center: a short motif in
+  maqam Hijaz on D (D, E flat, F sharp, G, A, B flat), a plucked qanun-like string
+  (Karplus-Strong synthesis), a soft daf, and a low D drone.
+- Composed and synthesised from scratch by `scripts/generate-notification-assets.mjs`
+  (deterministic, no samples or third-party recordings), so there is no external license.
+- Re-generate with `node scripts/generate-notification-assets.mjs` (the `.m4a` needs macOS
+  `afconvert` or `ffmpeg`; the `.wav` is the universal fallback).

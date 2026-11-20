@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/lib/types";
 import { IconCircle } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos } from "@/components/shared/aos-props";
 import { DonateCta, DonationAccountsList, DonationProgress } from "@/components/donate";
 import { HomeSection } from "./home-section";
 
@@ -17,7 +18,7 @@ export async function HomeDonate({ locale }: { locale: Locale }) {
   return (
     <HomeSection id="infaq" tone="dark">
       <SectionHeading tone="inverse" tag={t("donate.tag")} tri={{ ar: "إنفاق" }} title={t("donate.title")} highlight={t("donate.highlight")} description={t("donate.description")} />
-      <div className="mt-10 overflow-hidden rounded-2xl border border-hero-foreground/15">
+      <div {...aos("zoom-in-up")} className="mt-10 overflow-hidden rounded-2xl border border-hero-foreground/15">
         <DonateCta locale={locale} tone="inverse" />
       </div>
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">

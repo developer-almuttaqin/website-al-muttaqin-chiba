@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState, IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { JumuahCard } from "@/components/prayer";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 /** Jumat "pekan ini" bergantung tanggal server; jangan diprerender saat build. */
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export default async function JumuahPage({ params }: { params: Promise<{ locale:
         <div className="container-site relative py-12 lg:py-16">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:items-center">
             <div className="animate-fade-up">
-              <SectionHeading as="h1" tone="inverse" tag={t("hero.tag")} tri={{ ja: t("hero.triJa"), ar: t("hero.triAr") }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
+              <SectionHeading as="h1" tone="inverse" aos={false} tag={t("hero.tag")} tri={{ ja: t("hero.triJa"), ar: t("hero.triAr") }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/prayer-times" className={buttonVariants({ variant: "inverse", size: "lg" })}>
                   {t("card.prayerTimes")}
@@ -74,8 +75,8 @@ export default async function JumuahPage({ params }: { params: Promise<{ locale:
             <div className="mt-8">
               {later.length ? (
                 <ul className="space-y-3">
-                  {later.map((j) => (
-                    <JumuahRow key={j.id} jumuah={j} locale={locale} languageLabel={t(`languages.${j.language}`)} khatibLabel={tc("labels.khatib")} />
+                  {later.map((j, i) => (
+                    <JumuahRow key={j.id} index={i} jumuah={j} locale={locale} languageLabel={t(`languages.${j.language}`)} khatibLabel={tc("labels.khatib")} />
                   ))}
                 </ul>
               ) : (
@@ -88,8 +89,8 @@ export default async function JumuahPage({ params }: { params: Promise<{ locale:
             <div className="mt-8">
               {past.length ? (
                 <ul className="space-y-3">
-                  {past.map((j) => (
-                    <JumuahRow key={j.id} jumuah={j} locale={locale} languageLabel={t(`languages.${j.language}`)} khatibLabel={tc("labels.khatib")} muted />
+                  {past.map((j, i) => (
+                    <JumuahRow key={j.id} index={i} jumuah={j} locale={locale} languageLabel={t(`languages.${j.language}`)} khatibLabel={tc("labels.khatib")} muted />
                   ))}
                 </ul>
               ) : (
@@ -102,8 +103,8 @@ export default async function JumuahPage({ params }: { params: Promise<{ locale:
 
       <section className="container-site pb-12 lg:pb-16">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <Card variant="muted" className="rounded-3xl">
-            <SectionHeading as="h3" tag={t("etiquette.tag")} title={t("etiquette.title")} highlight={t("etiquette.highlight")} description={t("etiquette.description")} />
+          <Card variant="muted" className="rounded-3xl" {...aos("fade-up")}>
+            <SectionHeading as="h3" aos={false} tag={t("etiquette.tag")} title={t("etiquette.title")} highlight={t("etiquette.highlight")} description={t("etiquette.description")} />
             <div className="mt-4">
               {ETIQUETTE_KEYS.map((key, i) => (
                 <NumberedItem key={key} index={i + 1} title={t(`etiquette.items.${key}.title`)} description={t(`etiquette.items.${key}.body`)} />
@@ -111,8 +112,8 @@ export default async function JumuahPage({ params }: { params: Promise<{ locale:
             </div>
           </Card>
           <div className="space-y-6">
-            <Card className="rounded-3xl">
-              <SectionHeading as="h3" tag={t("practical.tag")} title={t("practical.title")} highlight={t("practical.highlight")} />
+            <Card className="rounded-3xl" {...aos("fade-up", { delay: stagger(1) })}>
+              <SectionHeading as="h3" aos={false} tag={t("practical.tag")} title={t("practical.title")} highlight={t("practical.highlight")} />
               <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {PRACTICAL.map(({ key, Icon }) => (
                   <li key={key} className="flex items-start gap-3">
@@ -127,7 +128,7 @@ export default async function JumuahPage({ params }: { params: Promise<{ locale:
                 ))}
               </ul>
             </Card>
-            <Card variant="dark" className="rounded-3xl">
+            <Card variant="dark" className="rounded-3xl" {...aos("zoom-in-up", { delay: stagger(2) })}>
               <h3 className="text-lg font-bold">{t("ics.title")}</h3>
               <p className="mt-2 text-sm text-hero-muted">{t("ics.body")}</p>
               <a href={icsHref} download className={buttonVariants({ variant: "inverse", size: "md", className: "mt-5" })}>
@@ -142,10 +143,25 @@ export default async function JumuahPage({ params }: { params: Promise<{ locale:
   );
 }
 
-function JumuahRow({ jumuah, locale, languageLabel, khatibLabel, muted = false }: { jumuah: JumuahSchedule; locale: Locale; languageLabel: string; khatibLabel: string; muted?: boolean }) {
+function JumuahRow({
+  jumuah,
+  index,
+  locale,
+  languageLabel,
+  khatibLabel,
+  muted = false,
+}: {
+  jumuah: JumuahSchedule;
+  /** Urutan dalam daftar, untuk jeda animasi gulir bertahap. */
+  index: number;
+  locale: Locale;
+  languageLabel: string;
+  khatibLabel: string;
+  muted?: boolean;
+}) {
   const date = parseTokyoDate(jumuah.date);
   return (
-    <li className={muted ? "card-muted p-4" : "card-surface p-4"}>
+    <li className={muted ? "card-muted p-4" : "card-surface p-4"} {...aos("fade-up", { delay: stagger(index) })}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-semibold">
           {formatWeekday(date, locale, "short")}, {formatDate(date, locale, { day: "numeric", month: "long", year: "numeric" })}

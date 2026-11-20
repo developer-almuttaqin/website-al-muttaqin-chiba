@@ -11,6 +11,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
 import { FaqAccordion } from "@/components/about";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -47,10 +48,11 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
       <SectionHeading as="h1" tag={t("hero.tag")} tri={{ ja: "よくある質問", ar: "الأسئلة الشائعة" }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
 
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
-        <div className="lg:col-span-8">
+        {/* `fade` (tanpa geser) agar tautan /faq#id mendarat tepat di itemnya. */}
+        <div {...aos("fade")} className="lg:col-span-8">
           <FaqAccordion items={items} locale={locale} searchable />
         </div>
-        <aside className="lg:col-span-4">
+        <aside {...aos("fade-up", { delay: stagger(1) })} className="lg:col-span-4">
           <div className="card-muted sticky top-24 p-6">
             <IconCircle color="emerald">
               <WhatsAppIcon />

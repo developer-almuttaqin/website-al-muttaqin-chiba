@@ -7,6 +7,7 @@ import { formatDate, pick } from "@/lib/utils/i18n";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { RichText } from "@/components/ui/rich-text";
 import { buttonVariants } from "@/components/ui/button";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -50,11 +51,11 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
       <SectionHeading as="h1" tag={t("hero.tag")} tri={{ ja: "プライバシーポリシー", ar: "سياسة الخصوصية" }} title={t("hero.title")} highlight={t("hero.highlight")} description={t("hero.description")} />
 
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
-        <article className="container-narrow lg:col-span-8 lg:mx-0 lg:max-w-none">
+        <article {...aos("fade-up")} className="container-narrow lg:col-span-8 lg:mx-0 lg:max-w-none">
           <p className="text-sm text-muted-foreground tabular">{t("effective", { date: formatDate(EFFECTIVE_DATE, locale) })}</p>
           <RichText blocks={blocks} className="mt-6" />
         </article>
-        <aside className="lg:col-span-4">
+        <aside {...aos("fade-up", { delay: stagger(1) })} className="lg:col-span-4">
           <div className="card-muted sticky top-24 p-6">
             <h2 className="text-lg font-bold">{t("aside.title")}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("aside.body")}</p>

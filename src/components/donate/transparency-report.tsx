@@ -5,6 +5,7 @@ import { formatCurrency, formatDate, pick } from "@/lib/utils/i18n";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { aos } from "@/components/shared/aos-props";
 import { sumAmounts } from "@/components/donate/transparency-chart";
 
 /** Kartu laporan bulanan: ringkasan saldo, tabel rincian, catatan bendahara, unduh PDF (PRD-05). */
@@ -16,7 +17,7 @@ export async function TransparencyReportCard({ report, locale, featured = false 
   const note = pick(report.note, locale);
 
   return (
-    <article className={cn("card-surface p-5 sm:p-6", featured && "border-primary/30")} aria-labelledby={`report-${report.id}`}>
+    <article {...aos("fade-up")} className={cn("card-surface p-5 sm:p-6", featured && "border-primary/30")} aria-labelledby={`report-${report.id}`}>
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           {featured && <Badge variant="brand" className="mb-2">{t("report.latest")}</Badge>}

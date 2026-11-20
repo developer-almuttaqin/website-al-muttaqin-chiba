@@ -8,6 +8,7 @@ import { pick } from "@/lib/utils/i18n";
 import { AppScreenHeader } from "@/components/app/shell";
 import { IconCircle } from "@/components/ui/primitives";
 import { DonationAccountsList, DonationFlow } from "@/components/donate";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -51,8 +52,8 @@ export default async function AppDonatePage({ params }: { params: Promise<{ loca
       <DonationFlow locale={locale} programs={formPrograms} accounts={formAccounts} compact />
 
       <ul className="space-y-2">
-        {links.map(({ href, label, Icon }) => (
-          <li key={href}>
+        {links.map(({ href, label, Icon }, i) => (
+          <li key={href} {...aos("fade-up", { delay: stagger(i, 50, 200) })}>
             <Link href={href} className="card-surface lift flex items-center gap-3 p-4 text-sm font-semibold">
               <IconCircle tone="soft" shape="square" size="sm">
                 <Icon />

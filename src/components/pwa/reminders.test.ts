@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PrayerConfig } from "@/lib/types";
 import { getPrayerTimesToday } from "@/lib/prayer";
+import { formatTime } from "@/lib/utils/i18n";
 import {
   DEFAULT_PUSH_PREFS,
   buildReminderMessage,
@@ -10,7 +11,6 @@ import {
   getReminderEvents,
   minuteFloor,
   normalizePreferences,
-  pruneFiredLog,
   reminderNotifyAt,
   reminderTag,
   wantsEvent,
@@ -46,13 +46,22 @@ describe("normalizePreferences", () => {
 });
 
 describe("getReminderEvents", () => {
-  it("creates adhan and iqamah events per enabled prayer", () => {
+  it("creates exactly one event per enabled prayer, carrying the iqamah time", () => {
+    const today = getPrayerTimesToday(config, coords, wednesday);
     const events = getReminderEvents(config, coords, DEFAULT_PUSH_PREFS, wednesday, 1);
-    expect(events.filter((e) => e.kind === "adhan")).toHaveLength(5);
-    expect(events.filter((e) => e.kind === "iqamah")).toHaveLength(5);
-    const prefs = { ...DEFAULT_PUSH_PREFS, asr: false, iqamahReminder: false };
+    expect(events.map((e) => e.kind)).toEqual(["adhan", "adhan", "adhan", "adhan", "adhan"]);
+    expect(events.find((e) => e.prayer === "dhuhr")?.iqamah?.getTime()).toBe(today.iqamah.dhuhr.getTime());
+    const prefs = { ...DEFAULT_PUSH_PREFS, asr: false };
     const filtered = getReminderEvents(config, coords, prefs, wednesday, 1);
     expect(filtered.map((e) => e.prayer)).toEqual(["fajr", "dhuhr", "maghrib", "isha"]);
+  });
+
+  it("ignores the legacy iqamahReminder preference (no separate iqamah notification)", () => {
+    const legacy = getReminderEvents(config, coords, { ...DEFAULT_PUSH_PREFS, iqamahReminder: true }, wednesday, 1);
+    expect(legacy).toHaveLength(5);
+    // Dua notifikasi tidak pernah jatuh di menit yang sama (dulu adzan + iqamah beruntun).
+    const minutes = legacy.map((e) => minuteFloor(reminderNotifyAt(e)));
+    expect(new Set(minutes).size).toBe(minutes.length);
   });
 
   it("replaces dhuhr with jumuah on Friday", () => {
@@ -65,7 +74,7 @@ describe("getReminderEvents", () => {
 });
 
 describe("getNextLocalReminder", () => {
-  it("returns the next reminder after now, with iqamah 10 minutes early", () => {
+  it("returns the next adhan after now", () => {
     const today = getPrayerTimesToday(config, coords, wednesday);
     const next = getNextLocalReminder(config, coords, DEFAULT_PUSH_PREFS, wednesday);
     expect(next?.event.kind).toBe("adhan");
@@ -73,9 +82,9 @@ describe("getNextLocalReminder", () => {
     expect(next?.notifyAt.getTime()).toBe(today.times.dhuhr.getTime());
 
     const afterDhuhr = new Date(today.times.dhuhr.getTime() + 60_000);
-    const iq = getNextLocalReminder(config, coords, DEFAULT_PUSH_PREFS, afterDhuhr);
-    expect(iq?.event.kind).toBe("iqamah");
-    expect(iq?.notifyAt.getTime()).toBe(today.iqamah.dhuhr.getTime() - 10 * 60_000);
+    const asr = getNextLocalReminder(config, coords, DEFAULT_PUSH_PREFS, afterDhuhr);
+    expect(asr?.event.prayer).toBe("asr");
+    expect(asr?.notifyAt.getTime()).toBe(today.times.asr.getTime());
   });
 });
 
@@ -100,7 +109,7 @@ describe("getCronEvents", () => {
     expect(sent[0].at - target).toBeLessThan(60_000);
   });
 
-  it("sends every event of a day exactly once, including iqamah and Friday reminders", () => {
+  it("sends every event of a day exactly once, including Friday reminders", () => {
     for (const day of [wednesday, friday]) {
       const expected = getReminderEvents(config, coords, DEFAULT_PUSH_PREFS, day, 1);
       expect(expected.length).toBeGreaterThan(0);
@@ -139,22 +148,31 @@ describe("getDueReminders", () => {
     expect(getDueReminders(config, coords, DEFAULT_PUSH_PREFS, new Date(dhuhr - 1000))).toHaveLength(0);
     const due = getDueReminders(config, coords, DEFAULT_PUSH_PREFS, new Date(dhuhr + 20_000));
     expect(due.map(reminderTag)).toEqual(["adhan-dhuhr-2026-11-11"]);
-    expect(getDueReminders(config, coords, DEFAULT_PUSH_PREFS, new Date(dhuhr + 4 * 60_000)).some((e) => e.kind === "adhan")).toBe(false);
+    expect(getDueReminders(config, coords, DEFAULT_PUSH_PREFS, new Date(dhuhr + 2 * 60_000))).toHaveLength(0);
     expect(getDueReminders(config, coords, { ...DEFAULT_PUSH_PREFS, dhuhr: false }, new Date(dhuhr + 20_000))).toHaveLength(0);
   });
 
-  it("prunes old fired tags", () => {
-    const now = Date.now();
-    expect(pruneFiredLog({ a: now - 1000, b: now - 3 * 24 * 60 * 60_000 }, now)).toEqual({ a: now - 1000 });
+  it("never fires an adhan that happened before the app was opened", () => {
+    const today = getPrayerTimesToday(config, coords, wednesday);
+    const dhuhr = today.times.dhuhr.getTime();
+    // App dibuka 10 detik SESUDAH adzan (mis. dari notifikasi): tidak berbunyi.
+    expect(getDueReminders(config, coords, DEFAULT_PUSH_PREFS, new Date(dhuhr + 20_000), { since: dhuhr + 10_000 })).toHaveLength(0);
+    // App sudah terbuka SEBELUM adzan: berbunyi tepat waktu.
+    const due = getDueReminders(config, coords, DEFAULT_PUSH_PREFS, new Date(dhuhr + 1_000), { since: dhuhr - 60_000 });
+    expect(due.map(reminderTag)).toEqual(["adhan-dhuhr-2026-11-11"]);
   });
 });
 
 describe("messages", () => {
   it("builds localized text and stable tags", () => {
     const [event] = getReminderEvents(config, coords, DEFAULT_PUSH_PREFS, wednesday, 1);
-    const msg = buildReminderMessage(event, "en", (key, v) => `${key}:${v.prayer}:${v.time}`, (p) => p.toUpperCase());
-    expect(msg.title).toMatch(/^adhanTitle:FAJR:\d{2}:\d{2}$/);
+    const msg = buildReminderMessage(event, "en", (key, v) => `${key}|${v.prayer}|${v.time}|${v.iqamah}`, (p) => p.toUpperCase());
+    expect(msg.title).toMatch(/^adhanTitle\|FAJR\|\d{2}:\d{2}\|\d{2}:\d{2}$/);
+    // Isi adzan memuat jam iqamah (fajr: +20 menit pada konfigurasi uji).
+    expect(msg.body).toBe(`adhanBody|FAJR|${formatTime(event.time, "en")}|${formatTime(event.iqamah!, "en")}`);
+    expect(event.iqamah!.getTime() - event.time.getTime()).toBe(20 * 60_000);
     expect(reminderTag(event)).toBe("adhan-fajr-2026-11-11");
-    expect(wantsEvent({ ...DEFAULT_PUSH_PREFS, iqamahReminder: false }, { ...event, kind: "iqamah" })).toBe(false);
+    expect(wantsEvent({ ...DEFAULT_PUSH_PREFS, fajr: false }, event)).toBe(false);
+    expect(wantsEvent({ ...DEFAULT_PUSH_PREFS, jumuah: false }, { ...event, kind: "jumuah" })).toBe(false);
   });
 });

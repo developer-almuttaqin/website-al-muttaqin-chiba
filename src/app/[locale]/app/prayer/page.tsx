@@ -9,6 +9,7 @@ import { AppScreenHeader } from "@/components/app/shell";
 import { buttonVariants } from "@/components/ui/button";
 import { JumuahCard, PrayerTodayCard } from "@/components/prayer";
 import { OfflineSchedule } from "@/components/prayer/offline-schedule";
+import { aos } from "@/components/shared/aos-props";
 
 /** Jadwal mulai "hari ini" bergantung jam server; jangan diprerender saat build. */
 export const dynamic = "force-dynamic";
@@ -36,7 +37,9 @@ export default async function AppPrayerPage({ params }: { params: Promise<{ loca
       <AppScreenHeader title={t("app.title")} description={t("app.description")} backLabel={ta("back")} />
       <PrayerTodayCard locale={locale} variant="app" />
       <OfflineSchedule initialDays={initialDays} />
-      <JumuahCard locale={locale} compact />
+      <div {...aos("fade-up")}>
+        <JumuahCard locale={locale} compact />
+      </div>
       <Link href="/prayer-times" className={buttonVariants({ variant: "outline", size: "md", className: "w-full" })}>
         <CalendarDays />
         {t("app.fullSchedule")}

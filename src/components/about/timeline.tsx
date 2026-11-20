@@ -1,13 +1,14 @@
 import * as React from "react";
 import type { Locale, TimelineItem } from "@/lib/types";
 import { pick } from "@/lib/utils/i18n";
+import { aos, stagger } from "@/components/shared/aos-props";
 
-/** Garis waktu vertikal sejarah masjid (PRD-03a). */
+/** Garis waktu vertikal sejarah masjid (PRD-03a). Tiap peristiwa naik bertahap saat digulir (AOS). */
 export function Timeline({ items, locale }: { items: TimelineItem[]; locale: Locale }) {
   return (
     <ol className="relative space-y-8 border-l border-border pl-8 sm:pl-10">
       {items.map((item, i) => (
-        <li key={`${item.year}-${i}`} className="relative">
+        <li key={`${item.year}-${i}`} {...aos("fade-up", { delay: stagger(i) })} className="relative">
           <span className="absolute top-1.5 -left-8 flex size-4 items-center justify-center sm:-left-10" aria-hidden>
             <span className="size-4 -translate-x-1/2 rounded-full border-4 border-background bg-primary ring-1 ring-border" />
           </span>
