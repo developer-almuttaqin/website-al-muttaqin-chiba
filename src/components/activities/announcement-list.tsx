@@ -6,6 +6,7 @@ import { formatDate, pick } from "@/lib/utils/i18n";
 import { Badge } from "@/components/ui/badge";
 import { IconCircle } from "@/components/ui/primitives";
 import { ShareButton } from "@/components/activities/share-button";
+import type { AosProps } from "@/components/shared/aos-props";
 import { cn } from "@/lib/utils/cn";
 
 const NEW_WINDOW_MS = 7 * 86_400_000;
@@ -14,8 +15,23 @@ export function isNewAnnouncement(a: Pick<Announcement, "publishedAt">, now: num
   return now - new Date(a.publishedAt).getTime() < NEW_WINDOW_MS;
 }
 
-/** Satu baris pengumuman: badge tersemat/baru/kategori, judul, ringkasan, tanggal, opsional tombol bagikan. */
-export function AnnouncementItem({ announcement, locale, compact = false, share = false }: { announcement: Announcement; locale: Locale; compact?: boolean; share?: boolean }) {
+/**
+ * Satu baris pengumuman: badge tersemat/baru/kategori, judul, ringkasan, tanggal, opsional tombol bagikan.
+ * `aos` (opsional) memasang atribut animasi gulir di <li>; hanya diisi pemanggil yang induknya tidak ber-data-aos.
+ */
+export function AnnouncementItem({
+  announcement,
+  locale,
+  compact = false,
+  share = false,
+  aos,
+}: {
+  announcement: Announcement;
+  locale: Locale;
+  compact?: boolean;
+  share?: boolean;
+  aos?: AosProps;
+}) {
   const t = useTranslations("news");
   const tc = useTranslations("common");
   const isNew = isNewAnnouncement(announcement);
@@ -24,7 +40,7 @@ export function AnnouncementItem({ announcement, locale, compact = false, share 
   const href = `/news/${announcement.slug}`;
 
   return (
-    <li className={cn("card-surface relative flex gap-3 p-4 sm:gap-4 sm:p-5", announcement.pinned && "border-primary/30", urgent && "border-warning/40")}>
+    <li {...(aos ?? {})} className={cn("card-surface relative flex gap-3 p-4 sm:gap-4 sm:p-5", announcement.pinned && "border-primary/30", urgent && "border-warning/40")}>
       <IconCircle size="sm" tone={urgent ? "brand" : announcement.pinned ? "soft" : "default"} className="mt-0.5">
         {urgent ? <TriangleAlert /> : <Megaphone />}
       </IconCircle>

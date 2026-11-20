@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Field, Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { aos } from "@/components/shared/aos-props";
 import {
   MIN_BASE_AMOUNT,
   QUICK_AMOUNTS,
@@ -73,7 +74,7 @@ export function UniqueAmountPicker({
   }
 
   return (
-    <div className={cn("grid grid-cols-1 gap-5", !compact && "lg:grid-cols-[1fr_minmax(0,22rem)]")}>
+    <div {...(compact ? {} : aos("fade-up"))} className={cn("grid grid-cols-1 gap-5", !compact && "lg:grid-cols-[1fr_minmax(0,22rem)]")}>
       <div className="space-y-5">
         <div className="space-y-2">
           <p className="text-sm font-semibold">{t("currency")}</p>

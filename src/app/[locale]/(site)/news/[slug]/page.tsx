@@ -13,6 +13,7 @@ import { RichText } from "@/components/ui/rich-text";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { AnnouncementList, NewsCard, ShareButton } from "@/components/activities";
 import { CoverImage } from "@/components/activities/cover-image";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 /** Apakah instant ISO sudah lewat (di luar komponen agar render tetap murni). */
 function isPast(iso: string): boolean {
@@ -96,10 +97,12 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
         {!isAnnouncement && entry.item.coverImage && <CoverImage src={entry.item.coverImage} alt={title} className="mt-8" />}
 
-        <RichText blocks={pickBlocks(item.body, locale)} className="mt-8" />
+        <div className="mt-8" {...aos("fade-up")}>
+          <RichText blocks={pickBlocks(item.body, locale)} />
+        </div>
 
         {!isAnnouncement && entry.item.tags.length > 0 && (
-          <ul className="mt-8 flex flex-wrap items-center gap-2 border-t border-border pt-6">
+          <ul className="mt-8 flex flex-wrap items-center gap-2 border-t border-border pt-6" {...aos("fade-up")}>
             <li className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
               <Tag className="size-3.5" aria-hidden />
             </li>
@@ -118,13 +121,14 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
           <h2 id="news-related" className="sr-only">
             {t("labels.related")}
           </h2>
-          <div className="mt-8">
+          {/* Pengumuman terkait dianimasikan sebagai satu blok; kartu berita bertahap per item. */}
+          <div className="mt-8" {...(isAnnouncement ? aos("fade-up") : {})}>
             {isAnnouncement ? (
               <AnnouncementList announcements={relatedAnnouncements} locale={locale} className="lg:grid-cols-3" />
             ) : (
               <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {relatedPosts.map((p) => (
-                  <li key={p.id}>
+                {relatedPosts.map((p, i) => (
+                  <li key={p.id} {...aos("fade-up", { delay: stagger(i) })}>
                     <NewsCard post={p} locale={locale} />
                   </li>
                 ))}

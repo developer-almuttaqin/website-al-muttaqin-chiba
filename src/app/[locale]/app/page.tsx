@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { getAnnouncements, getEvents, getHadithOfTheDay, getProfile } from "@/lib/data";
 import { pick } from "@/lib/utils/i18n";
 import { APP_SCREENS } from "@/components/site/nav-config";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { SCREEN_ICONS, SCREEN_TONES } from "@/components/app/screen-icons";
 import { IconCircle } from "@/components/ui/primitives";
 import { HijriDateBadge, JumuahCard, PrayerTodayCard } from "@/components/prayer";
@@ -61,10 +62,10 @@ export default async function AppHomePage({ params }: { params: Promise<{ locale
           {tp("home.shortcuts")}
         </h2>
         <ul className="grid grid-cols-4 gap-x-2 gap-y-4">
-          {APP_SCREENS.slice(0, 8).map((s) => {
+          {APP_SCREENS.slice(0, 8).map((s, i) => {
             const Icon = SCREEN_ICONS[s.key];
             return (
-              <li key={s.key}>
+              <li key={s.key} {...aos("fade-up", { delay: stagger(i % 4, 50, 200) })}>
                 <Link href={s.href} className="group flex flex-col items-center gap-2 rounded-xl text-center text-[0.7rem] font-semibold">
                   <IconCircle tone="soft" shape="square" color={SCREEN_TONES[s.key]}>
                     {Icon ? <Icon /> : null}
@@ -77,10 +78,12 @@ export default async function AppHomePage({ params }: { params: Promise<{ locale
         </ul>
       </nav>
 
-      <JumuahCard locale={locale} compact />
+      <div {...aos("fade-up")}>
+        <JumuahCard locale={locale} compact />
+      </div>
 
       {(channelId || nextLecture) && (
-        <section aria-labelledby="app-home-live" className="space-y-3">
+        <section {...aos("fade-up")} aria-labelledby="app-home-live" className="space-y-3">
           <h2 id="app-home-live" className="text-base font-bold">
             {tp("home.live")}
           </h2>
@@ -89,7 +92,7 @@ export default async function AppHomePage({ params }: { params: Promise<{ locale
       )}
 
       {announcements.length > 0 && (
-        <section aria-labelledby="app-home-announcements" className="space-y-3">
+        <section {...aos("fade-up")} aria-labelledby="app-home-announcements" className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <h2 id="app-home-announcements" className="text-base font-bold">
               {tp("home.announcements")}
@@ -103,7 +106,7 @@ export default async function AppHomePage({ params }: { params: Promise<{ locale
         </section>
       )}
 
-      <section aria-labelledby="app-home-hadith" className="card-surface p-5">
+      <section {...aos("fade-up")} aria-labelledby="app-home-hadith" className="card-surface p-5">
         <div className="flex items-center gap-3">
           <IconCircle size="sm" tone="soft">
             <Quote />
@@ -121,7 +124,9 @@ export default async function AppHomePage({ params }: { params: Promise<{ locale
         <p className="mt-2 text-xs text-muted-foreground">{hadith.source}</p>
       </section>
 
-      <DonateCta locale={locale} />
+      <div {...aos("fade-up")}>
+        <DonateCta locale={locale} />
+      </div>
     </div>
   );
 }

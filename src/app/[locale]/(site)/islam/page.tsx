@@ -13,6 +13,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { SectionTag } from "@/components/ui/section-tag";
 import { IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -75,7 +76,7 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
       <section className="container-site py-12 lg:py-16">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1.2fr] lg:gap-14">
           <SectionHeading tag={t("intro.tag")} title={t("intro.title")} highlight={t("intro.highlight")} />
-          <div className="space-y-4 text-lg leading-relaxed">
+          <div {...aos("fade-up", { delay: stagger(1) })} className="space-y-4 text-lg leading-relaxed">
             <p>{t("intro.p1")}</p>
             <p className="text-muted-foreground">{t("intro.p2")}</p>
             <Card variant="muted" className="p-5">
@@ -93,13 +94,13 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
         <div className="container-site py-12 lg:py-16">
           <SectionHeading tag={t("pillars.tag")} title={t("pillars.title")} highlight={t("pillars.highlight")} description={t("pillars.description")} />
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Card className="px-6 py-2">
+            <Card {...aos("fade-up")} className="px-6 py-2">
               <h3 className="pt-4 text-lg font-bold">{t("pillars.faithTitle")}</h3>
               {FAITH_KEYS.map((k, i) => (
                 <NumberedItem key={k} index={i + 1} title={t(`pillars.faith.${k}.title`)} description={t(`pillars.faith.${k}.text`)} />
               ))}
             </Card>
-            <Card className="px-6 py-2">
+            <Card {...aos("fade-up", { delay: stagger(1) })} className="px-6 py-2">
               <h3 className="pt-4 text-lg font-bold">{t("pillars.islamTitle")}</h3>
               {ISLAM_KEYS.map((k, i) => (
                 <NumberedItem key={k} index={i + 1} title={t(`pillars.islam.${k}.title`)} description={t(`pillars.islam.${k}.text`)} />
@@ -113,8 +114,8 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
       <section className="container-site py-12 lg:py-16">
         <SectionHeading tag={t("japan.tag")} title={t("japan.title")} highlight={t("japan.highlight")} description={t("japan.description")} />
         <dl className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {stats.map((s) => (
-            <Card key={s.key} variant="dark" className="p-6">
+          {stats.map((s, i) => (
+            <Card key={s.key} {...aos("fade-up", { delay: stagger(i) })} variant="dark" className="p-6">
               <dd className="text-4xl font-bold tabular">
                 {Number.isFinite(s.value) ? formatNumber(s.value, locale) : t(`japan.stats.${s.key}.value`)}
                 <span className="text-xl">{s.suffix}</span>
@@ -131,7 +132,7 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
         <div className="container-site grid grid-cols-1 gap-10 py-12 lg:grid-cols-2 lg:gap-14 lg:py-16">
           <div>
             <SectionHeading tag={t("mosque.tag")} title={t("mosque.title")} highlight={t("mosque.highlight")} description={t("mosque.description")} />
-            <div className="card-surface mt-6 px-6">
+            <div {...aos("fade-up")} className="card-surface mt-6 px-6">
               {MOSQUE_KEYS.map((k, i) => (
                 <NumberedItem key={k} index={i + 1} title={t(`mosque.items.${k}.title`)} description={t(`mosque.items.${k}.text`)} />
               ))}
@@ -140,8 +141,8 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
           <div>
             <SectionHeading tag={t("etiquette.tag")} title={t("etiquette.title")} highlight={t("etiquette.highlight")} description={t("etiquette.description")} />
             <ul className="mt-6 space-y-3">
-              {ETIQUETTE.map(({ key, icon: Icon }) => (
-                <li key={key} className="card-surface flex items-start gap-4 p-5">
+              {ETIQUETTE.map(({ key, icon: Icon }, i) => (
+                <li key={key} {...aos("fade-up", { delay: stagger(i) })} className="card-surface flex items-start gap-4 p-5">
                   <IconCircle size="sm" tone="soft">
                     <Icon />
                   </IconCircle>
@@ -161,8 +162,8 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1.4fr] lg:gap-14">
           <SectionHeading tag={t("myths.tag")} title={t("myths.title")} highlight={t("myths.highlight")} description={t("myths.description")} />
           <Accordion type="single" collapsible className="space-y-3">
-            {MYTH_KEYS.map((k) => (
-              <AccordionItem key={k} value={k}>
+            {MYTH_KEYS.map((k, i) => (
+              <AccordionItem key={k} value={k} {...aos("fade-up", { delay: stagger(i) })}>
                 <AccordionTrigger>{t(`myths.items.${k}.q`)}</AccordionTrigger>
                 <AccordionContent>{t(`myths.items.${k}.a`)}</AccordionContent>
               </AccordionItem>
@@ -176,7 +177,8 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
         <div className="container-site py-12 lg:py-16">
           <SectionHeading tag={t("learn.tag")} title={t("learn.title")} highlight={t("learn.highlight")} description={t("learn.description")} />
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {LEARN.map(({ key, icon: Icon, href }) => {
+            {LEARN.map(({ key, icon: Icon, href }, i) => {
+              const motion = aos("fade-up", { delay: stagger(i % 4) });
               const body = (
                 <>
                   <IconCircle tone="soft" shape="square">
@@ -194,12 +196,15 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
                   )}
                 </>
               );
+              // Kartu bertautan memakai `lift` (transisi hover sendiri), jadi AOS dipasang di pembungkusnya.
               return href ? (
-                <Link key={key} href={href} className="card-surface lift flex h-full flex-col gap-4 p-6">
-                  {body}
-                </Link>
+                <div key={key} {...motion}>
+                  <Link href={href} className="card-surface lift flex h-full flex-col gap-4 p-6">
+                    {body}
+                  </Link>
+                </div>
               ) : (
-                <div key={key} className="card-surface flex h-full flex-col gap-4 p-6">
+                <div key={key} {...motion} className="card-surface flex h-full flex-col gap-4 p-6">
                   {body}
                 </div>
               );
@@ -210,7 +215,7 @@ export default async function IslamPage({ params }: { params: Promise<{ locale: 
 
       {/* Kontak pembimbing & ajakan kunjungan */}
       <section id="contact" className="container-site py-12 lg:py-16">
-        <Card variant="dark" className="grid grid-cols-1 gap-8 p-8 lg:grid-cols-[1.2fr_1fr] lg:p-12">
+        <Card {...aos("zoom-in-up")} variant="dark" className="grid grid-cols-1 gap-8 p-8 lg:grid-cols-[1.2fr_1fr] lg:p-12">
           <div>
             <SectionTag tone="inverse">{t("contact.tag")}</SectionTag>
             <h2 className="headline mt-4 text-3xl sm:text-4xl">{t("contact.title")}</h2>

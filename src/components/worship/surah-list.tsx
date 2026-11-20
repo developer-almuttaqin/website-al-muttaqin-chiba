@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState, IconCircle } from "@/components/ui/primitives";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { useStoredJson } from "./storage";
 import { normalizeSearch } from "./utils";
 import { surahLocalName } from "./utils";
@@ -70,8 +71,8 @@ export function SurahList({ surahs, locale }: { surahs: QuranSurahMeta[]; locale
         <EmptyState icon={<Search />} title={t("search.empty")} />
       ) : (
         <ol className="flex flex-col gap-2">
-          {list.map((s) => (
-            <li key={s.number}>
+          {list.map((s, i) => (
+            <li key={s.number} {...aos("fade-up", { delay: stagger(i, 50, 200) })}>
               <Link href={`/app/quran/${s.number}`} className="card-surface lift flex items-center gap-3 p-3">
                 <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface text-sm font-bold tabular")}>{s.number}</span>
                 <span className="min-w-0 flex-1">

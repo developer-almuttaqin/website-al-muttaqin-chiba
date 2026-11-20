@@ -2,9 +2,12 @@ import * as React from "react";
 import { cn } from "@/lib/utils/cn";
 import { SectionTag } from "@/components/ui/section-tag";
 import { TwoToneTitle } from "@/components/ui/two-tone-title";
+import { aos as aosProps, type AosAnimation } from "@/components/shared/aos-props";
 
 /**
  * Kepala section standar: tag pill, judul dua warna, deskripsi, dan slot aksi di kanan.
+ * Muncul dengan animasi gulir (AOS) `fade-up` bawaan, kecuali judul utama halaman (`as="h1"`, hero)
+ * yang tampil langsung. `aos={false}` mematikannya, misalnya bila pembungkusnya sudah ber-data-aos.
  */
 export function SectionHeading({
   tag,
@@ -16,6 +19,7 @@ export function SectionHeading({
   align = "left",
   tone = "default",
   as = "h2",
+  aos = as === "h1" ? false : "fade-up",
   className,
 }: {
   tag?: string;
@@ -27,10 +31,12 @@ export function SectionHeading({
   align?: "left" | "center";
   tone?: "default" | "inverse";
   as?: "h1" | "h2" | "h3";
+  aos?: AosAnimation | false;
   className?: string;
 }) {
   return (
     <div
+      {...(aos ? aosProps(aos) : {})}
       className={cn(
         "flex flex-col gap-4 md:flex-row md:items-end md:justify-between",
         align === "center" && "items-center text-center md:flex-col md:items-center md:justify-center",

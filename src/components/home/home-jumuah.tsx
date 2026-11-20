@@ -6,6 +6,7 @@ import type { Locale } from "@/lib/types";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { JumuahCard } from "@/components/prayer";
 import { EventCard } from "@/components/activities";
 import { HomeSection } from "./home-section";
@@ -29,7 +30,7 @@ export async function HomeJumuah({ locale }: { locale: Locale }) {
         }
       />
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-        <div className="lg:col-span-5">
+        <div {...aos("fade-up")} className="lg:col-span-5">
           <JumuahCard locale={locale} className="h-full" />
         </div>
         <div className="lg:col-span-7">
@@ -41,8 +42,8 @@ export async function HomeJumuah({ locale }: { locale: Locale }) {
             <EmptyState icon={<CalendarDays />} title={t("jumuah.empty")} />
           ) : (
             <ul className="grid gap-4">
-              {events.map((event) => (
-                <li key={event.id}>
+              {events.map((event, i) => (
+                <li key={event.id} {...aos("fade-up", { delay: stagger(i + 1) })}>
                   <EventCard event={event} locale={locale} compact />
                 </li>
               ))}

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/primitives";
 import { LectureCard } from "@/components/activities/lecture-card";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 const LANGUAGES: Lecture["language"][] = ["id", "ja", "en", "ar"];
 
@@ -91,8 +92,8 @@ export function LectureBrowser({ lectures, locale }: { lectures: Lecture[]; loca
         <EmptyState className="mt-4" icon={<Search />} title={t("filters.empty")} action={active ? <Button variant="outline" size="sm" onClick={clear}>{t("filters.clear")}</Button> : undefined} />
       ) : (
         <ul className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((l) => (
-            <li key={l.id}>
+          {filtered.map((l, i) => (
+            <li key={l.id} {...aos("fade-up", { delay: stagger(i % 3) })}>
               <LectureCard lecture={l} locale={locale} />
             </li>
           ))}

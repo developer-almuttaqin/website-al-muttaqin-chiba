@@ -5,13 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
 import { SectionTag } from "@/components/ui/section-tag";
+import { aos } from "@/components/shared/aos-props";
 
 /** Placeholder gateway otomatis (Midtrans/Stripe): tampil hanya bila PAYMENT_GATEWAY_ENABLED=true (PRD-05 §8). */
 export async function GatewayCard({ locale }: { locale: Locale }) {
   if (process.env.PAYMENT_GATEWAY_ENABLED !== "true") return null;
   const t = await getTranslations({ locale, namespace: "donate" });
   return (
-    <section className="card-muted flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between" aria-labelledby="gateway-title">
+    <section {...aos("fade-up")} className="card-muted flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between" aria-labelledby="gateway-title">
       <div className="flex items-start gap-4">
         <IconCircle tone="soft" size="lg">
           <CreditCard />

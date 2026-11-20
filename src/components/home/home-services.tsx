@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils/cn";
 import { buttonVariants } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { HomeSection } from "./home-section";
 
 type ServiceKey = "prayer" | "lectures" | "muallaf" | "tpa" | "openMosque" | "newcomers";
@@ -33,15 +34,17 @@ export async function HomeServices({ locale }: { locale: Locale }) {
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
             <SectionHeading tag={t("services.tag")} title={t("services.title")} highlight={t("services.highlight")} description={t("services.description")} />
-            <Link href="/programs" className={cn(buttonVariants({ variant: "primary" }), "mt-8")}>
-              {t("services.cta")}
-              <ArrowRight />
-            </Link>
+            <div {...aos("fade-up", { delay: 120 })}>
+              <Link href="/programs" className={cn(buttonVariants({ variant: "primary" }), "mt-8")}>
+                {t("services.cta")}
+                <ArrowRight />
+              </Link>
+            </div>
           </div>
         </div>
         <ol className="card-surface px-5 sm:px-8 lg:col-span-7">
           {SERVICES.map(({ key, href, icon: Icon }, i) => (
-            <li key={key} className="border-b border-border last:border-b-0">
+            <li key={key} {...aos("fade-up", { delay: stagger(i) })} className="border-b border-border last:border-b-0">
               <Link href={href} className="group flex items-start gap-4 py-6 sm:gap-6">
                 <span className="headline w-10 shrink-0 text-2xl text-brand tabular sm:w-14 sm:text-4xl">{String(i + 1).padStart(2, "0")}</span>
                 <div className="flex min-w-0 flex-1 items-start gap-4">

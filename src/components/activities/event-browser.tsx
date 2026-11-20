@@ -8,6 +8,7 @@ import { Field, Select } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/primitives";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventCard } from "@/components/activities/event-card";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 const CATEGORY_ORDER: EventCategory[] = ["kajian", "tpa", "muallaf", "class", "open-mosque", "community", "culture", "ramadan", "eid"];
 
@@ -56,8 +57,8 @@ export function EventBrowser({ upcoming, past, locale, initialTab = "upcoming" }
           <EmptyState icon={<CalendarDays />} title={t("filters.emptyUpcoming")} />
         ) : (
           <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {shownUpcoming.map((e) => (
-              <li key={e.id}>
+            {shownUpcoming.map((e, i) => (
+              <li key={e.id} {...aos("fade-up", { delay: stagger(i % 2) })}>
                 <EventCard event={e} locale={locale} past={false} />
               </li>
             ))}
@@ -69,8 +70,8 @@ export function EventBrowser({ upcoming, past, locale, initialTab = "upcoming" }
           <EmptyState icon={<CalendarDays />} title={t("filters.emptyPast")} />
         ) : (
           <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {shownPast.map((e) => (
-              <li key={e.id}>
+            {shownPast.map((e, i) => (
+              <li key={e.id} {...aos("fade-up", { delay: stagger(i % 2) })}>
                 <EventCard event={e} locale={locale} past />
               </li>
             ))}

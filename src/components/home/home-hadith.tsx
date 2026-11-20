@@ -6,6 +6,7 @@ import type { Locale } from "@/lib/types";
 import { pick } from "@/lib/utils/i18n";
 import { IconCircle } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos } from "@/components/shared/aos-props";
 import { HomeSection } from "./home-section";
 
 /** Hadis hari ini (PRD-03b §9): teks Arab (font-arabic, RTL) dan terjemahan sesuai bahasa. */
@@ -22,7 +23,7 @@ export async function HomeHadith({ locale }: { locale: Locale }) {
             <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>
-        <figure className="card-surface relative overflow-hidden rounded-3xl p-6 sm:p-10 lg:col-span-8">
+        <figure {...aos("fade-up", { delay: 80 })} className="card-surface relative overflow-hidden rounded-3xl p-6 sm:p-10 lg:col-span-8">
           <span className="pattern-star-subtle pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative">
             <IconCircle tone="brand">

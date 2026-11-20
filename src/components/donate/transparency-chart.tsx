@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale, TransparencyReport } from "@/lib/types";
 import { formatCurrency, formatDate, parseTokyoDate, toIntlLocale } from "@/lib/utils/i18n";
+import { aos } from "@/components/shared/aos-props";
 
 export function sumAmounts(items: { amount: number }[]): number {
   return items.reduce((acc, i) => acc + i.amount, 0);
@@ -37,7 +38,7 @@ export async function TransparencyChart({ reports, locale, months = 6 }: { repor
   const compact = new Intl.NumberFormat(toIntlLocale(locale), { notation: "compact", maximumFractionDigits: 0 });
 
   return (
-    <figure className="card-surface p-5 sm:p-6">
+    <figure {...aos("fade-up")} className="card-surface p-5 sm:p-6">
       <figcaption className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-bold">{t("chart.title")}</p>

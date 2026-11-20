@@ -6,11 +6,13 @@ import { formatCurrency, pick } from "@/lib/utils/i18n";
 import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { IconCircle, Progress } from "@/components/ui/primitives";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { PROGRAM_ICONS } from "@/components/donate/program-icon";
 
 /**
  * Kartu program donasi dengan progres (PRD-05 §2). Server Component.
  * `columns` membatasi grid (App Jamaah memakai 2 agar tidak sempit).
+ * Kartu muncul saat digulir (AOS) bertahap per baris; pembungkus pemanggil jangan ber-data-aos.
  */
 export async function DonationProgress({ locale, limit, columns = 3 }: { locale: Locale; limit?: number; columns?: 2 | 3 }) {
   const [programs, t] = await Promise.all([getDonationPrograms(), getTranslations({ locale, namespace: "donate" })]);
@@ -18,7 +20,7 @@ export async function DonationProgress({ locale, limit, columns = 3 }: { locale:
 
   return (
     <ul className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2", columns === 3 && "lg:grid-cols-3")}>
-      {list.map((program) => {
+      {list.map((program, i) => {
         const Icon = PROGRAM_ICONS[program.icon];
         const completed = program.status === "completed";
         const target = program.target?.amount ?? 0;
@@ -26,7 +28,7 @@ export async function DonationProgress({ locale, limit, columns = 3 }: { locale:
         const percent = completed ? 100 : target > 0 ? Math.min(100, Math.round((raised / target) * 100)) : 0;
         const badgeVariant = completed ? "success" : program.status === "closed" ? "outline" : "soft";
         return (
-          <li key={program.id} className={cn("card-surface flex flex-col gap-4 p-5", completed && "bg-surface/60")}>
+          <li key={program.id} {...aos("fade-up", { delay: stagger(i % columns) })} className={cn("card-surface flex flex-col gap-4 p-5", completed && "bg-surface/60")}>
             <div className="flex items-start justify-between gap-3">
               <IconCircle tone={completed ? "default" : "soft"} shape="square">
                 <Icon />

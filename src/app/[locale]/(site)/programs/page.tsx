@@ -8,6 +8,7 @@ import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { buttonVariants } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { IconCircle, NumberedItem } from "@/components/ui/primitives";
+import { aos } from "@/components/shared/aos-props";
 import { ProgramGrid } from "@/components/programs";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -31,6 +32,7 @@ export default async function ProgramsPage({ params }: { params: Promise<{ local
           <SectionHeading
             as="h1"
             tone="inverse"
+            aos={false}
             tag={t("tag")}
             tri={{ ja: "プログラム", ar: "برامج" }}
             title={t("title")}
@@ -46,12 +48,12 @@ export default async function ProgramsPage({ params }: { params: Promise<{ local
 
       <section className="bg-surface/60">
         <div className="container-site grid grid-cols-1 gap-10 py-12 lg:grid-cols-2 lg:gap-16 lg:py-16">
-          <div>
+          <div {...aos("fade-up")}>
             <div className="flex items-center gap-3">
               <IconCircle tone="soft" shape="square">
                 <HeartHandshake />
               </IconCircle>
-              <SectionHeading as="h2" tag={t("muallaf.tag")} title={t("muallaf.title")} highlight={t("muallaf.highlight")} />
+              <SectionHeading as="h2" tag={t("muallaf.tag")} title={t("muallaf.title")} highlight={t("muallaf.highlight")} aos={false} />
             </div>
             <p className="mt-4 text-muted-foreground">{t("muallaf.description")}</p>
             <div className="card-surface mt-6 px-6">
@@ -65,12 +67,12 @@ export default async function ProgramsPage({ params }: { params: Promise<{ local
             </Link>
           </div>
 
-          <div>
+          <div {...aos("fade-up", { delay: 120 })}>
             <div className="flex items-center gap-3">
               <IconCircle tone="soft" shape="square">
                 <DoorOpen />
               </IconCircle>
-              <SectionHeading as="h2" tag={t("visits.tag")} title={t("visits.title")} highlight={t("visits.highlight")} />
+              <SectionHeading as="h2" tag={t("visits.tag")} title={t("visits.title")} highlight={t("visits.highlight")} aos={false} />
             </div>
             <p className="mt-4 text-muted-foreground">{t("visits.description")}</p>
             <div className="card-surface mt-6 px-6">
@@ -91,7 +93,7 @@ export default async function ProgramsPage({ params }: { params: Promise<{ local
       </section>
 
       <section className="container-site py-12 lg:py-16">
-        <div className="card-surface flex flex-col items-start gap-6 p-8 md:flex-row md:items-center md:justify-between">
+        <div {...aos("zoom-in-up")} className="card-surface flex flex-col items-start gap-6 p-8 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-bold">{t("cta.title")}</h2>
             <p className="mt-2 max-w-xl text-muted-foreground">{t("cta.body")}</p>

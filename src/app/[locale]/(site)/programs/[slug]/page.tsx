@@ -14,6 +14,7 @@ import { RichText } from "@/components/ui/rich-text";
 import { SectionTag } from "@/components/ui/section-tag";
 import { IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { ProgramIcon, ProgramRegistrationForm } from "@/components/programs";
 
 type Params = { locale: string; slug: string };
@@ -92,13 +93,13 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
       <section className="container-site py-12 lg:py-16">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_24rem] lg:gap-14">
           <div className="min-w-0 space-y-10">
-            <div>
+            <div {...aos("fade-up")}>
               <h2 className="text-2xl font-bold">{t("detail.about")}</h2>
               <RichText blocks={pickBlocks(program.description, locale)} className="mt-4" />
             </div>
 
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Card variant="muted" className="flex items-start gap-4 p-5">
+              <Card variant="muted" {...aos("fade-up")} className="flex items-start gap-4 p-5">
                 <IconCircle size="sm" tone="soft">
                   <CalendarDays />
                 </IconCircle>
@@ -107,7 +108,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
                   <dd className="mt-1 font-semibold">{pick(program.schedule, locale)}</dd>
                 </div>
               </Card>
-              <Card variant="muted" className="flex items-start gap-4 p-5">
+              <Card variant="muted" {...aos("fade-up", { delay: 80 })} className="flex items-start gap-4 p-5">
                 <IconCircle size="sm" tone="soft">
                   <UsersRound />
                 </IconCircle>
@@ -116,7 +117,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
                   <dd className="mt-1 font-semibold">{pick(program.audience, locale)}</dd>
                 </div>
               </Card>
-              <Card variant="muted" className="flex items-start gap-4 p-5">
+              <Card variant="muted" {...aos("fade-up")} className="flex items-start gap-4 p-5">
                 <IconCircle size="sm" tone="soft">
                   <Languages />
                 </IconCircle>
@@ -125,7 +126,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
                   <dd className="mt-1 font-semibold">{program.languages.map((l) => t(`lang.${l}`)).join(" · ")}</dd>
                 </div>
               </Card>
-              <Card variant="muted" className="flex items-start gap-4 p-5">
+              <Card variant="muted" {...aos("fade-up", { delay: 80 })} className="flex items-start gap-4 p-5">
                 <IconCircle size="sm" tone="soft">
                   <UserRound />
                 </IconCircle>
@@ -137,7 +138,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
             </dl>
 
             {REQ_KEYS.every((k) => t.has(`requirements.${program.id}.${k}.title`)) && (
-              <div>
+              <div {...aos("fade-up")}>
                 <h2 className="text-2xl font-bold">{t("detail.requirements")}</h2>
                 <div className="card-surface mt-4 px-6">
                   {REQ_KEYS.map((k, i) => (
@@ -148,7 +149,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
             )}
 
             {special && (
-              <div>
+              <div {...aos("fade-up")}>
                 <SectionTag>{t(`${special}.tag`)}</SectionTag>
                 <h2 className="mt-3 text-2xl font-bold">
                   {t(`${special}.title`)} <span className="text-brand">{t(`${special}.highlight`)}</span>
@@ -163,16 +164,16 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
             )}
 
             <div>
-              <h2 className="text-2xl font-bold">{t("detail.faqTitle")}</h2>
+              <h2 {...aos("fade-up")} className="text-2xl font-bold">{t("detail.faqTitle")}</h2>
               <Accordion type="single" collapsible className="mt-4 space-y-3">
-                {faqs.map((f) => (
-                  <AccordionItem key={f.id} value={f.id}>
+                {faqs.map((f, i) => (
+                  <AccordionItem key={f.id} value={f.id} {...aos("fade-up", { delay: stagger(i) })}>
                     <AccordionTrigger>{pick(f.question, locale)}</AccordionTrigger>
                     <AccordionContent>{pick(f.answer, locale)}</AccordionContent>
                   </AccordionItem>
                 ))}
-                {FAQ_KEYS.map((k) => (
-                  <AccordionItem key={k} value={`general-${k}`}>
+                {FAQ_KEYS.map((k, i) => (
+                  <AccordionItem key={k} value={`general-${k}`} {...aos("fade-up", { delay: stagger(faqs.length + i) })}>
                     <AccordionTrigger>{t(`faq.${k}.q`)}</AccordionTrigger>
                     <AccordionContent>{t(`faq.${k}.a`)}</AccordionContent>
                   </AccordionItem>
@@ -182,7 +183,8 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <Card className="p-6 sm:p-8">
+            {/* AOS di kartu (anak), bukan di <aside> yang sticky. */}
+            <Card className="p-6 sm:p-8" {...aos("fade-up")}>
               <SectionTag tone="brand">{program.registrationOpen ? t("detail.registerTag") : t("detail.infoTag")}</SectionTag>
               <h2 className="mt-3 text-xl font-bold">{program.registrationOpen ? t("detail.registerTitle") : t("detail.closedTitle")}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{program.registrationOpen ? t("detail.registerDescription") : t("detail.closedDescription")}</p>

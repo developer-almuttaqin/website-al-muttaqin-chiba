@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/utils/i18n";
 import { cn } from "@/lib/utils/cn";
 import { buttonVariants } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos } from "@/components/shared/aos-props";
 import { DocumentaryPlayer } from "./documentary-player";
 import { HomeSection } from "./home-section";
 
@@ -40,7 +41,7 @@ export async function DocumentaryFeature({ locale, tone = "default", className }
           description={t("documentary.description")}
           tone={inverse ? "inverse" : "default"}
         />
-        <dl className={cn("mt-6 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2", inverse ? "text-hero-muted" : "text-muted-foreground")}>
+        <dl {...aos("fade-up", { delay: 80 })} className={cn("mt-6 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2", inverse ? "text-hero-muted" : "text-muted-foreground")}>
           <div className="flex items-center gap-2">
             <Clock className="size-4 shrink-0" aria-hidden />
             <dt className="sr-only">{t("documentary.duration")}</dt>
@@ -64,7 +65,7 @@ export async function DocumentaryFeature({ locale, tone = "default", className }
             </dd>
           </div>
         </dl>
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div {...aos("fade-up", { delay: 160 })} className="mt-8 flex flex-wrap gap-3">
           <a href={watchUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: inverse ? "inverse" : "primary" })}>
             <ExternalLink />
             {t("documentary.watchOnYoutube")}
@@ -72,7 +73,7 @@ export async function DocumentaryFeature({ locale, tone = "default", className }
           </a>
         </div>
       </div>
-      <div className="lg:col-span-7">
+      <div {...aos("zoom-in", { delay: 120 })} className="lg:col-span-7">
         <DocumentaryPlayer videoId={video.youtubeId} title={video.title} playLabel={t("documentary.play")} duration={duration} />
       </div>
     </div>

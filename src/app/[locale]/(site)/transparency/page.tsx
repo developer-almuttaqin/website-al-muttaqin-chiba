@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/types";
 import { getTransparencyReports } from "@/lib/data";
 import { EmptyState, IconCircle } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { DonateCta, TransparencyChart, TransparencyReportCard } from "@/components/donate";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -24,15 +25,15 @@ export default async function TransparencyPage({ params }: { params: Promise<{ l
 
   return (
     <div className="container-site space-y-16 py-12 lg:space-y-20 lg:py-16">
-      <SectionHeading as="h1" tag={t("tag")} tri={{ ja: "会計報告", ar: "شفافية" }} title={t("title")} highlight={t("highlight")} description={t("description")} />
+      <SectionHeading as="h1" aos={false} tag={t("tag")} tri={{ ja: "会計報告", ar: "شفافية" }} title={t("title")} highlight={t("highlight")} description={t("description")} />
 
       <section aria-labelledby="principles-title" className="space-y-6">
         <SectionHeading as="h2" tag={t("principles.tag")} title={t("principles.title")} />
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(["1", "2", "3", "4"] as const).map((k) => {
+          {(["1", "2", "3", "4"] as const).map((k, i) => {
             const Icon = PRINCIPLE_ICONS[k];
             return (
-              <li key={k} className="card-muted flex flex-col gap-3 p-5">
+              <li key={k} {...aos("fade-up", { delay: stagger(i) })} className="card-muted flex flex-col gap-3 p-5">
                 <IconCircle tone="soft" shape="square" size="sm">
                   <Icon />
                 </IconCircle>
@@ -56,7 +57,7 @@ export default async function TransparencyPage({ params }: { params: Promise<{ l
 
           {older.length > 0 && (
             <section className="space-y-6" aria-labelledby="archive-title">
-              <h2 id="archive-title" className="headline text-2xl sm:text-3xl">
+              <h2 id="archive-title" {...aos("fade-up")} className="headline text-2xl sm:text-3xl">
                 {t("report.archive")}
               </h2>
               <div className="grid gap-6">
@@ -69,7 +70,10 @@ export default async function TransparencyPage({ params }: { params: Promise<{ l
         </>
       )}
 
-      <DonateCta locale={locale} tone="inverse" />
+      {/* Pembungkus ber-AOS di sini (bukan di DonateCta) karena DonateCta juga dipakai di beranda & App. */}
+      <div {...aos("zoom-in-up")}>
+        <DonateCta locale={locale} tone="inverse" />
+      </div>
     </div>
   );
 }

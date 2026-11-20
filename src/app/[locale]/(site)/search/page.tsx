@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { Link, getPathname } from "@/i18n/navigation";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos } from "@/components/shared/aos-props";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState, IconCircle } from "@/components/ui/primitives";
@@ -41,7 +42,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   return (
     <div className="container-narrow py-12 lg:py-16">
-      <SectionHeading as="h1" tag={t("page.tag")} title={t("page.title")} highlight={t("page.highlight")} description={t("page.description")} />
+      <SectionHeading as="h1" aos={false} tag={t("page.tag")} title={t("page.title")} highlight={t("page.highlight")} description={t("page.description")} />
 
       <form action={getPathname({ href: "/search", locale })} method="get" role="search" className="mt-8 flex gap-2">
         <label htmlFor="search-page-q" className="sr-only">
@@ -78,7 +79,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
               {groups.map((g) => {
                 const Icon = SEARCH_TYPE_ICONS[g.type];
                 return (
-                  <section key={g.type} aria-labelledby={`search-group-${g.type}`}>
+                  <section key={g.type} aria-labelledby={`search-group-${g.type}`} {...aos("fade-up")}>
                     <h2 id={`search-group-${g.type}`} className="flex items-center gap-2 text-lg font-bold">
                       {t(`types.${g.type}`)}
                       <Badge variant="outline">{g.items.length}</Badge>

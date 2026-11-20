@@ -6,6 +6,7 @@ import type { Locale } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 import { IconCircle } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { aos, stagger } from "@/components/shared/aos-props";
 import { HomeSection } from "./home-section";
 
 type PortalKey = "jamaah" | "newcomers" | "donors";
@@ -24,8 +25,8 @@ export async function HomePortal({ locale }: { locale: Locale }) {
     <HomeSection id="portal">
       <SectionHeading tag={t("portal.tag")} title={t("portal.title")} highlight={t("portal.highlight")} description={t("portal.description")} />
       <ul className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3 lg:gap-6">
-        {PORTALS.map(({ key, href, icon: Icon, dark }) => (
-          <li key={key}>
+        {PORTALS.map(({ key, href, icon: Icon, dark }, i) => (
+          <li key={key} {...aos("fade-up", { delay: stagger(i) })}>
             <Link
               href={href}
               className={cn(
@@ -55,19 +56,21 @@ export async function HomePortal({ locale }: { locale: Locale }) {
           </li>
         ))}
       </ul>
-      <Link href="/app/help" className="card-muted lift group mt-4 flex items-center gap-4 rounded-3xl p-5 sm:p-6 lg:mt-6">
-        <IconCircle tone="brand" size="md">
-          <LifeBuoy />
-        </IconCircle>
-        <div className="min-w-0 flex-1">
-          <p className="font-bold">{t("portal.help.title")}</p>
-          <p className="mt-0.5 text-sm text-muted-foreground">{t("portal.help.description")}</p>
-        </div>
-        <span className="hidden shrink-0 items-center gap-1.5 text-sm font-semibold text-brand sm:inline-flex">
-          {t("portal.help.cta")}
-        </span>
-        <ArrowRight className="size-5 shrink-0 text-brand transition-transform group-hover:translate-x-0.5" aria-hidden />
-      </Link>
+      <div {...aos("fade-up", { delay: stagger(PORTALS.length) })}>
+        <Link href="/app/help" className="card-muted lift group mt-4 flex items-center gap-4 rounded-3xl p-5 sm:p-6 lg:mt-6">
+          <IconCircle tone="brand" size="md">
+            <LifeBuoy />
+          </IconCircle>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold">{t("portal.help.title")}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">{t("portal.help.description")}</p>
+          </div>
+          <span className="hidden shrink-0 items-center gap-1.5 text-sm font-semibold text-brand sm:inline-flex">
+            {t("portal.help.cta")}
+          </span>
+          <ArrowRight className="size-5 shrink-0 text-brand transition-transform group-hover:translate-x-0.5" aria-hidden />
+        </Link>
+      </div>
     </HomeSection>
   );
 }

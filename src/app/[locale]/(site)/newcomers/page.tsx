@@ -31,6 +31,7 @@ import { IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { NewcomerChecklist, PrintButton } from "@/components/guides";
 import { cn } from "@/lib/utils/cn";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 type NamedItem = { name: string; detail: string };
 type EmergencyNumber = { label: string; number: string; detail: string };
@@ -110,7 +111,7 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
       {/* 1. Langkah pertama */}
       <section id="firstSteps" className="container-site scroll-mt-24 py-12 lg:py-16">
         <SectionHeading tag={t("firstSteps.tag")} title={t("firstSteps.title")} description={t("firstSteps.description")} />
-        <div className="mt-8">
+        <div {...aos("fade-up")} className="mt-8">
           <NewcomerChecklist locale={locale} />
         </div>
       </section>
@@ -120,13 +121,13 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
         <div className="container-site">
           <SectionHeading tag={t("garbage.tag")} title={t("garbage.title")} description={t("garbage.description")} />
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
-            <div className="card-surface px-5 sm:px-6">
+            <div {...aos("fade-up")} className="card-surface px-5 sm:px-6">
               {garbageTypes.map((item, i) => (
                 <NumberedItem key={item.name} index={i + 1} title={item.name} description={item.detail} icon={<Recycle />} />
               ))}
             </div>
             <div className="flex flex-col gap-4">
-              <Card>
+              <Card {...aos("fade-up", { delay: stagger(1) })}>
                 <CardTitle>{t("garbage.scheduleTitle")}</CardTitle>
                 <CardDescription className="mt-2">{t("garbage.schedule")}</CardDescription>
                 <a href={t("garbage.linkUrl")} target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4")}>
@@ -134,7 +135,7 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
                   <ExternalLink />
                 </a>
               </Card>
-              <Card variant="muted">
+              <Card {...aos("fade-up", { delay: stagger(2) })} variant="muted">
                 <CardTitle>{t("garbage.tipsTitle")}</CardTitle>
                 <ul className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
                   {garbageTips.map((tip) => (
@@ -155,7 +156,7 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
         <SectionHeading tag={t("transport.tag")} title={t("transport.title")} description={t("transport.description")} />
         <Accordion type="multiple" className="mt-8 flex flex-col gap-3">
           {transportItems.map((item, i) => (
-            <AccordionItem key={item.name} value={`transport-${i}`}>
+            <AccordionItem key={item.name} value={`transport-${i}`} {...aos("fade-up", { delay: stagger(i) })}>
               <AccordionTrigger>
                 <span className="flex items-center gap-3">
                   <IconCircle size="sm" tone="soft">
@@ -185,7 +186,7 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
             }
           />
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Card>
+            <Card {...aos("fade-up")}>
               <CardTitle>{t("halal.supermarketsTitle")}</CardTitle>
               <ul className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
                 {supermarkets.map((item) => (
@@ -196,7 +197,7 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
                 ))}
               </ul>
             </Card>
-            <Card>
+            <Card {...aos("fade-up", { delay: stagger(1) })}>
               <CardTitle>{t("halal.labelsTitle")}</CardTitle>
               <ul className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
                 {labels.map((item) => (
@@ -215,8 +216,8 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
       <section id="emergency" className="container-site scroll-mt-24 py-12 lg:py-16">
         <SectionHeading tag={t("emergency.tag")} title={t("emergency.title")} description={t("emergency.description")} />
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {numbers.map((n) => (
-            <Card key={n.number} variant="dark" className="flex flex-col">
+          {numbers.map((n, i) => (
+            <Card key={n.number} {...aos("fade-up", { delay: stagger(i % 3) })} variant="dark" className="flex flex-col">
               <div className="flex items-center gap-3">
                 <IconCircle tone="inverse" size="sm">
                   <Siren />
@@ -233,7 +234,7 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
           ))}
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card>
+          <Card {...aos("fade-up")}>
             <div className="flex items-center gap-3">
               <IconCircle tone="soft" size="sm">
                 <Backpack />
@@ -249,7 +250,7 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
               ))}
             </ol>
           </Card>
-          <Card>
+          <Card {...aos("fade-up", { delay: stagger(1) })}>
             <div className="flex items-center gap-3">
               <IconCircle tone="soft" size="sm">
                 <Landmark />
@@ -262,7 +263,7 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
               {t("emergency.consulatePhone")}
             </a>
           </Card>
-          <Card>
+          <Card {...aos("fade-up", { delay: stagger(2) })}>
             <div className="flex items-center gap-3">
               <IconCircle tone="soft" size="sm">
                 <Hospital />
@@ -286,12 +287,12 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
         <div className="container-site">
           <SectionHeading tag={t("work.tag")} title={t("work.title")} description={t("work.description")} />
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
-            <div className="card-surface px-5 sm:px-6">
+            <div {...aos("fade-up")} className="card-surface px-5 sm:px-6">
               {workItems.map((item, i) => (
                 <NumberedItem key={item.name} index={i + 1} title={item.name} description={item.detail} icon={i === 3 ? <GraduationCap /> : <Briefcase />} />
               ))}
             </div>
-            <Card variant="muted" className="flex flex-col">
+            <Card {...aos("fade-up", { delay: stagger(1) })} variant="muted" className="flex flex-col">
               <CardTitle>{t("work.letterTitle")}</CardTitle>
               <p lang="ja" className="mt-4 rounded-xl border border-border bg-background p-4 text-sm leading-relaxed">
                 {t("work.letterJa")}
@@ -311,8 +312,8 @@ export default async function NewcomersPage({ params }: { params: Promise<{ loca
 
       {/* 7. Kontak */}
       <section id="contact" className="container-site scroll-mt-24 py-12 lg:py-16">
-        <Card variant="dark" className="p-8 sm:p-10">
-          <SectionHeading tone="inverse" tag={t("contact.tag")} title={t("contact.title")} description={t("contact.description")} />
+        <Card {...aos("zoom-in-up")} variant="dark" className="p-8 sm:p-10">
+          <SectionHeading aos={false} tone="inverse" tag={t("contact.tag")} title={t("contact.title")} description={t("contact.description")} />
           <div className="mt-8 flex flex-wrap gap-3 print:hidden">
             <a href={whatsappUrl} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "inverse" })}>
               <WhatsAppIcon />

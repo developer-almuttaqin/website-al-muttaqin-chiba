@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils/cn";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
+import { aos } from "@/components/shared/aos-props";
 import { useIsClient, useReducedMotionPreference } from "./storage";
 import { angularDistance, compassPoint, googleMapsQiblaUrl, haversineKm, KAABA, normalizeDegrees, shortestDelta } from "./utils";
 
@@ -221,7 +222,7 @@ export function QiblaCompass({ mosque, locale }: { mosque: GeoPoint; locale: Loc
         </div>
       </section>
 
-      <dl className="grid grid-cols-2 gap-3">
+      <dl {...aos("fade-up")} className="grid grid-cols-2 gap-3">
         <div className="card-muted p-4">
           <dt className="text-xs font-semibold text-muted-foreground">{t("qiblaLabel")}</dt>
           <dd className="mt-1 text-lg font-bold tabular">{t("degrees", { deg: formatNumber(Math.round(qibla * 10) / 10, locale) })}</dd>
@@ -274,7 +275,7 @@ export function QiblaCompass({ mosque, locale }: { mosque: GeoPoint; locale: Loc
           <p className="text-sm text-muted-foreground">{t("noSensorHint")}</p>
         </div>
       )}
-      <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4">
+      <div {...aos("fade-up")} className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4">
         <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" />
         <p className="text-sm text-muted-foreground">{t("calibration")}</p>
       </div>

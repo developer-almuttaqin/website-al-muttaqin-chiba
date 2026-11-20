@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/primitives";
+import { aos } from "@/components/shared/aos-props";
 import { ArabicSizeControl, useArabicSizeClass } from "./arabic-size-control";
 import { readJson, useStoredJson, writeJson } from "./storage";
 import { LAST_READ_KEY, surahLocalName, type LastRead } from "./surah-list";
@@ -212,7 +213,7 @@ export function SurahReader({ meta, prev, next, locale }: { meta: QuranSurahMeta
         <>
           {state.data.fromCache && <p className="text-xs text-muted-foreground">{t("reader.offlineCopy")}</p>}
           {showBasmalah && (
-            <div className="card-muted flex flex-col items-center gap-1 p-4 text-center">
+            <div {...aos("fade")} className="card-muted flex flex-col items-center gap-1 p-4 text-center">
               <p lang="ar" dir="rtl" className={cn("font-arabic", arabicClass)}>
                 {BASMALAH}
               </p>
@@ -221,7 +222,7 @@ export function SurahReader({ meta, prev, next, locale }: { meta: QuranSurahMeta
           )}
           <ol ref={listRef} className="flex flex-col gap-3">
             {state.data.ayahs.map((a) => (
-              <li key={a.n} id={`ayah-${a.n}`} data-ayah={a.n} tabIndex={-1} className="card-surface scroll-mt-20 flex flex-col gap-3 p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <li key={a.n} {...aos("fade")} id={`ayah-${a.n}`} data-ayah={a.n} tabIndex={-1} className="card-surface scroll-mt-20 flex flex-col gap-3 p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <div className="flex items-start gap-3">
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-xs font-bold tabular" aria-label={t("reader.ayah", { n: a.n })}>
                     {formatNumber(a.n, locale)}

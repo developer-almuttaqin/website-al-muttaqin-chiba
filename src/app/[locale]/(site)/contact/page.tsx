@@ -10,6 +10,7 @@ import { IconCircle } from "@/components/ui/primitives";
 import { LeafletMap } from "@/components/shared/map";
 import { FacebookIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon } from "@/components/site/social-icons";
 import { ContactCard, ContactForm, isContactSubject } from "@/components/about";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -52,10 +53,10 @@ export default async function ContactPage({
 
       {/* Kartu kontak + peta */}
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-5">
+        <div {...aos("fade-up")} className="lg:col-span-5">
           <ContactCard locale={locale} tone="inverse" className="h-full" />
         </div>
-        <div className="lg:col-span-7">
+        <div {...aos("fade-up", { delay: stagger(1) })} className="lg:col-span-7">
           <LeafletMap
             center={profile.coordinates}
             zoom={15}
@@ -103,7 +104,7 @@ export default async function ContactPage({
         </span>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="card-surface p-6">
+          <div {...aos("fade-up")} className="card-surface p-6">
             <IconCircle tone="soft" shape="square">
               <TrainFront />
             </IconCircle>
@@ -119,7 +120,7 @@ export default async function ContactPage({
             </ul>
           </div>
 
-          <div className="card-surface p-6">
+          <div {...aos("fade-up", { delay: stagger(1) })} className="card-surface p-6">
             <IconCircle tone="soft" shape="square">
               <Route />
             </IconCircle>
@@ -134,7 +135,7 @@ export default async function ContactPage({
             </ul>
           </div>
 
-          <div className="space-y-6">
+          <div {...aos("fade-up", { delay: stagger(2) })} className="space-y-6">
             <div className="card-surface p-6">
               <IconCircle tone="soft" shape="square">
                 <Car />
@@ -170,7 +171,7 @@ export default async function ContactPage({
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
             <SectionHeading tag={t("form.tag")} title={t("form.title")} highlight={t("form.highlight")} description={t("form.description")} />
-            <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
+            <ul {...aos("fade-up")} className="mt-6 space-y-3 text-sm text-muted-foreground">
               {[0, 1, 2].map((i) => (
                 <li key={i} className="flex gap-3">
                   <span className="mt-2 size-1.5 shrink-0 rounded-full bg-brand" aria-hidden />
@@ -179,7 +180,7 @@ export default async function ContactPage({
               ))}
             </ul>
 
-            <div className="mt-10">
+            <div {...aos("fade-up")} className="mt-10">
               <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("social.title")}</p>
               <p className="mt-2 text-sm text-muted-foreground">{t("social.description")}</p>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -192,7 +193,7 @@ export default async function ContactPage({
               </div>
             </div>
           </div>
-          <div className="lg:col-span-7">
+          <div {...aos("fade-up", { delay: stagger(1) })} className="lg:col-span-7">
             <ContactForm defaultSubject={defaultSubject} />
           </div>
         </div>

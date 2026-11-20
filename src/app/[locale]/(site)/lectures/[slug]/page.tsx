@@ -12,6 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import { LectureCard, ShareButton } from "@/components/activities";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateStaticParams() {
   const lectures = await getLectures();
@@ -85,7 +86,7 @@ export default async function LectureDetailPage({ params }: { params: Promise<{ 
             </div>
           </dl>
 
-          <section className="mt-8" aria-labelledby="lecture-about">
+          <section className="mt-8" aria-labelledby="lecture-about" {...aos("fade-up")}>
             <h2 id="lecture-about" className="text-xl font-bold">
               {t("detail.about")}
             </h2>
@@ -93,7 +94,7 @@ export default async function LectureDetailPage({ params }: { params: Promise<{ 
           </section>
 
           {lecture.tags.length > 0 && (
-            <section className="mt-8" aria-labelledby="lecture-tags">
+            <section className="mt-8" aria-labelledby="lecture-tags" {...aos("fade-up")}>
               <h2 id="lecture-tags" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                 <Tag className="size-4" aria-hidden />
                 {t("detail.tags")}
@@ -110,7 +111,7 @@ export default async function LectureDetailPage({ params }: { params: Promise<{ 
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <div className="card-surface p-5">
+          <div className="card-surface p-5" {...aos("fade-up")}>
             <dl className="space-y-3 text-sm">
               <div>
                 <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("detail.speaker")}</dt>
@@ -153,8 +154,8 @@ export default async function LectureDetailPage({ params }: { params: Promise<{ 
             {t("detail.related")}
           </h2>
           <ul className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((l) => (
-              <li key={l.id}>
+            {related.map((l, i) => (
+              <li key={l.id} {...aos("fade-up", { delay: stagger(i) })}>
                 <LectureCard lecture={l} locale={locale} />
               </li>
             ))}

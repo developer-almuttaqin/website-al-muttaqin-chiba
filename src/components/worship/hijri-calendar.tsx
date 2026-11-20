@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { IconCircle } from "@/components/ui/primitives";
+import { aos } from "@/components/shared/aos-props";
 import { daysUntilHijri, weekdayShortNames } from "./utils";
 
 type View = "hijri" | "gregorian";
@@ -207,7 +208,7 @@ export function HijriCalendar({ adjustment, importantDates, locale }: { adjustme
         </ul>
       </section>
 
-      <section className="card-muted flex flex-col gap-2 p-4">
+      <section {...aos("fade-up")} className="card-muted flex flex-col gap-2 p-4">
         <h2 className="text-sm font-bold">{t("important.title")}</h2>
         {importantInView.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("important.empty")}</p>
@@ -229,7 +230,7 @@ export function HijriCalendar({ adjustment, importantDates, locale }: { adjustme
         )}
       </section>
 
-      <section className="card-surface flex flex-col gap-3 p-4">
+      <section {...aos("fade-up")} className="card-surface flex flex-col gap-3 p-4">
         <h2 className="text-sm font-bold">{t("countdown.title")}</h2>
         <ul className="flex flex-col gap-2">
           {countdowns.map((c) => (
@@ -247,7 +248,7 @@ export function HijriCalendar({ adjustment, importantDates, locale }: { adjustme
         </ul>
       </section>
 
-      <section className="card-muted flex flex-col gap-3 p-4">
+      <section {...aos("fade-up")} className="card-muted flex flex-col gap-3 p-4">
         <h2 className="text-sm font-bold">{t("convert.title")}</h2>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="hijri-g-input">{t("convert.gregorian")}</Label>
@@ -271,7 +272,7 @@ export function HijriCalendar({ adjustment, importantDates, locale }: { adjustme
         </div>
       </section>
 
-      <div className="flex flex-col gap-1 rounded-2xl border border-border p-4 text-xs text-muted-foreground">
+      <div {...aos("fade-up")} className="flex flex-col gap-1 rounded-2xl border border-border p-4 text-xs text-muted-foreground">
         <p>{t("note.base")}</p>
         <p>{adjustment !== 0 ? t("note.adjusted", { count: formatNumber(adjustment, locale) }) : t("note.notAdjusted")}</p>
       </div>

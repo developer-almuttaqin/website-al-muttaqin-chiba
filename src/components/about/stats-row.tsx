@@ -5,12 +5,24 @@ import { getProfile, getPrograms } from "@/lib/data";
 import { toIntlLocale } from "@/lib/utils/i18n";
 import { CountUp } from "@/components/ui/count-up";
 import { cn } from "@/lib/utils/cn";
+import { aos as aosProps, stagger } from "@/components/shared/aos-props";
 
 /**
  * Baris statistik dengan angka naik (PRD-03a): kapasitas, jumlah program, bahasa, tahun berdiri.
  * Tahun ditampilkan statis agar tidak dipisah tanda ribuan.
+ * `aos`: ubin muncul bertahap saat digulir (opt-in; matikan bila pembungkusnya sudah ber-data-aos).
  */
-export async function StatsRow({ locale, tone = "default", className }: { locale: Locale; tone?: "default" | "inverse"; className?: string }) {
+export async function StatsRow({
+  locale,
+  tone = "default",
+  aos = false,
+  className,
+}: {
+  locale: Locale;
+  tone?: "default" | "inverse";
+  aos?: boolean;
+  className?: string;
+}) {
   const [t, profile, programs] = await Promise.all([getTranslations({ locale, namespace: "about" }), getProfile(), getPrograms()]);
   const intl = toIntlLocale(locale);
   const inverse = tone === "inverse";
@@ -24,9 +36,10 @@ export async function StatsRow({ locale, tone = "default", className }: { locale
 
   return (
     <dl className={cn("grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4", className)}>
-      {stats.map((s) => (
+      {stats.map((s, i) => (
         <div
           key={s.key}
+          {...(aos ? aosProps("fade-up", { delay: stagger(i) }) : {})}
           className={cn(
             "rounded-2xl px-5 py-6",
             inverse ? "border border-hero-foreground/15 bg-hero-foreground/5" : "card-muted",

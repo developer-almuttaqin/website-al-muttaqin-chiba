@@ -8,6 +8,7 @@ import { pick } from "@/lib/utils/i18n";
 import { AppScreenHeader } from "@/components/app/shell";
 import { buttonVariants } from "@/components/ui/button";
 import { AppLectureList, LiveStatusBanner } from "@/components/activities";
+import { aos } from "@/components/shared/aos-props";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -35,7 +36,7 @@ export default async function AppLivePage({ params }: { params: Promise<{ locale
       <AppScreenHeader title={t("app.title")} description={t("app.description")} backLabel={ta("back")} />
       <LiveStatusBanner channelId={channelId} locale={locale} tone="inverse" nextLecture={nextLecture} channelUrl={profile.social.youtube} />
 
-      <section className="mt-6" aria-labelledby="app-live-latest">
+      <section {...aos("fade-up")} className="mt-6" aria-labelledby="app-live-latest">
         <h2 id="app-live-latest" className="text-base font-bold">
           {t("app.latest")}
         </h2>

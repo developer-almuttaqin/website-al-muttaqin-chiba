@@ -13,6 +13,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select } from "@/components/ui/input";
 import { IconCircle } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
+import { aos } from "@/components/shared/aos-props";
 import { registerRecurringDonor } from "@/actions/donations";
 import { recurringDonorSchema, type RecurringDonorInput, type RecurringDonorValues } from "@/components/donate/schemas";
 import { buildRecurringCalendarUrl } from "@/components/donate/calendar-link";
@@ -112,7 +113,7 @@ export function RecurringDonorForm({ locale, siteUrl }: { locale: Locale; siteUr
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="card-surface space-y-5 p-5 sm:p-6">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate {...aos("fade-up", { delay: 80 })} className="card-surface space-y-5 p-5 sm:p-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label={t("fields.name")} htmlFor={`${id}-name`} error={msg(errors.fullName?.message)} required>
           <Input id={`${id}-name`} autoComplete="name" aria-invalid={Boolean(errors.fullName)} {...register("fullName")} />

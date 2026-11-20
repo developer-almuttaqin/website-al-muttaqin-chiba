@@ -14,6 +14,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
 import { IconCircle } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
+import { aos } from "@/components/shared/aos-props";
 import { confirmDonation } from "@/actions/donations";
 import { confirmDonationSchema, type ConfirmDonationInput, type ConfirmDonationValues } from "@/components/donate/schemas";
 import type { DonationCurrency } from "@/components/donate/unique-amount";
@@ -140,7 +141,7 @@ export function ConfirmationForm({
   const twoCols = compact ? "grid gap-4" : "grid grid-cols-1 gap-4 sm:grid-cols-2";
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="card-surface space-y-5 p-5 sm:p-6">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate {...(compact ? {} : aos("fade-up"))} className="card-surface space-y-5 p-5 sm:p-6">
       <div className={twoCols}>
         <Field label={t("fields.program")} htmlFor={`${id}-program`} error={msg(errors.programSlug?.message)} required>
           <Select id={`${id}-program`} {...register("programSlug")} aria-invalid={Boolean(errors.programSlug)}>

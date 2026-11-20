@@ -15,6 +15,7 @@ import { RichText } from "@/components/ui/rich-text";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { AddToCalendar, EventCard, EventRegistrationForm, ShareButton, registrationState } from "@/components/activities";
 import { CoverImage } from "@/components/activities/cover-image";
+import { aos, stagger } from "@/components/shared/aos-props";
 
 export async function generateStaticParams() {
   const events = await getEvents();
@@ -92,24 +93,24 @@ export default async function EventDetailPage({ params }: { params: Promise<{ lo
 
           {event.coverImage && <CoverImage src={event.coverImage} alt={title} className="mt-8" />}
 
-          <section className="mt-8" aria-labelledby="event-about">
+          <section className="mt-8" aria-labelledby="event-about" {...aos("fade-up")}>
             <h2 id="event-about" className="text-xl font-bold">
               {t("detail.about")}
             </h2>
             <RichText blocks={pickBlocks(event.description, locale)} className="mt-4" />
           </section>
 
-          {state.past && <p className="card-muted mt-8 p-4 text-sm text-muted-foreground">{t("detail.pastEvent")}</p>}
+          {state.past && <p className="card-muted mt-8 p-4 text-sm text-muted-foreground" {...aos("fade-up")}>{t("detail.pastEvent")}</p>}
 
           {showForm && (
-            <section className="mt-10" aria-label={t("form.title")}>
+            <section className="mt-10" aria-label={t("form.title")} {...aos("fade-up")}>
               <EventRegistrationForm eventSlug={event.slug} eventTitle={title} locale={locale} full={state.full} closed={false} />
             </section>
           )}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <div className="card-surface p-5">
+          <div className="card-surface p-5" {...aos("fade-up")}>
             <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{t("detail.practical")}</h2>
             <dl className="mt-4 space-y-4 text-sm">
               <div className="flex gap-3">
@@ -198,7 +199,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ lo
             </dl>
           </div>
 
-          <div className="card-surface p-5">
+          <div className="card-surface p-5" {...aos("fade-up", { delay: stagger(1) })}>
             <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{t("detail.addToCalendar")}</h2>
             <AddToCalendar event={event} locale={locale} siteUrl={siteUrl} className="mt-3" />
             <ShareButton title={title} text={pick(event.excerpt, locale)} url={eventUrl} label={t("detail.share")} variant="soft" size="sm" className="mt-2" />
@@ -213,8 +214,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ lo
             {t("detail.others")}
           </h2>
           <ul className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {otherEvents.map((e) => (
-              <li key={e.id}>
+            {otherEvents.map((e, i) => (
+              <li key={e.id} {...aos("fade-up", { delay: stagger(i) })}>
                 <EventCard event={e} locale={locale} compact past={false} />
               </li>
             ))}
