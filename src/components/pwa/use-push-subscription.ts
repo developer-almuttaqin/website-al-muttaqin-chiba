@@ -5,6 +5,7 @@ import { useLocale } from "next-intl";
 import { getSwRegistration, notifyPermissionChange, useNotificationPermission, usePushSupported, type PermissionState } from "./browser-state";
 import { useLocalJson } from "./local-store";
 import { DEFAULT_PUSH_PREFS, PUSH_PREFS_KEY, normalizePreferences, type PushPreferences } from "./reminders";
+import { ADHAN_VIBRATE, NOTIFY_BADGE, NOTIFY_ICON } from "./reminder-message";
 
 /** Isi `acc-push-prefs`: preferensi per salat + sakelar utama `enabled`. */
 export type StoredPushSettings = PushPreferences & { enabled: boolean };
@@ -124,16 +125,21 @@ export function usePushSubscription() {
     [settings, setStored, endpoint, vapidConfigured, locale],
   );
 
-  /** Notifikasi uji lewat registration.showNotification (fallback: Notification biasa). */
-  const sendTest = React.useCallback(async (title: string, body: string): Promise<boolean> => {
+  /**
+   * Notifikasi uji lewat registration.showNotification (fallback: Notification biasa).
+   * `silent`: App sedang memutar suara khasnya sendiri, jadi notifikasi sistem tidak ikut berbunyi.
+   */
+  const sendTest = React.useCallback(async (title: string, body: string, { silent = false }: { silent?: boolean } = {}): Promise<boolean> => {
     if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return false;
     const options: NotificationOptions & { renotify?: boolean; vibrate?: number[] } = {
       body,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: NOTIFY_ICON,
+      badge: NOTIFY_BADGE,
       tag: "acc-test",
-      renotify: true,
-      vibrate: [600, 250, 600],
+      renotify: !silent,
+      silent,
+      vibrate: silent ? undefined : ADHAN_VIBRATE,
+      data: { url: `/${locale}/app/settings`, kind: "test", tag: "acc-test" },
     };
     try {
       const reg = await getSwRegistration(3000);
@@ -143,7 +149,7 @@ export function usePushSubscription() {
     } catch {
       return false;
     }
-  }, []);
+  }, [locale]);
 
   return {
     supported,

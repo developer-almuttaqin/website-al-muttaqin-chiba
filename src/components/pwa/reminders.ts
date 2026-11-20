@@ -6,8 +6,13 @@ import { addDays, formatTime, parseTokyoDate } from "@/lib/utils/i18n";
  * Preferensi notifikasi adzan (sama dengan kolom `push_subscriptions.preferences`)
  * dan perhitungan kejadian pengingat yang dipakai bersama oleh server (cron push)
  * dan klien (pengingat lokal saat App terbuka).
+ *
+ * Satu notifikasi per waktu salat: notifikasi adzan sudah memuat jam iqamah, jadi tidak ada lagi
+ * pengingat iqamah terpisah (dulu iqamah 10 menit sebelum iqamah = tepat pada menit adzan untuk
+ * offset 10 menit, sehingga dua notifikasi muncul beruntun).
  */
 export type PushPreferences = Record<ObligatoryPrayer, boolean> & {
+  /** Usang (tidak dipakai lagi); tetap ada agar data lama di localStorage/DB tetap valid. */
   iqamahReminder: boolean;
   jumuah: boolean;
 };
@@ -18,7 +23,7 @@ export const DEFAULT_PUSH_PREFS: PushPreferences = {
   asr: true,
   maghrib: true,
   isha: true,
-  iqamahReminder: true,
+  iqamahReminder: false,
   jumuah: true,
 };
 
@@ -37,19 +42,20 @@ export function normalizePreferences(raw: unknown): PushPreferences {
   return out;
 }
 
-export type ReminderKind = "adhan" | "iqamah" | "jumuah";
+export type ReminderKind = "adhan" | "jumuah";
 
 export type ReminderEvent = {
   kind: ReminderKind;
   prayer: ObligatoryPrayer;
   /** Kunci tanggal Tokyo YYYY-MM-DD. */
   dateKey: string;
-  /** Waktu kejadian sebenarnya (adzan, iqamah, atau mulai Jumatan). */
+  /** Waktu kejadian sebenarnya (adzan atau mulai Jumatan). */
   time: Date;
+  /** Jam iqamah di masjid (khusus adzan), ditampilkan di isi notifikasi. */
+  iqamah?: Date;
 };
 
-/** Menit sebelum iqamah untuk pengingat iqamah, dan sebelum Jumatan untuk pengingat Jumat. */
-export const IQAMAH_LEAD_MIN = 10;
+/** Menit sebelum Jumatan untuk pengingat Jumat. */
 export const JUMUAH_LEAD_MIN = 30;
 
 /** Tag notifikasi yang sama di server & klien agar notifikasi ganda saling menggantikan. */
@@ -58,8 +64,8 @@ export function reminderTag(e: Pick<ReminderEvent, "kind" | "prayer" | "dateKey"
 }
 
 /** Waktu ideal menampilkan pengingat di perangkat. */
-export function reminderNotifyAt(e: ReminderEvent): Date {
-  const lead = e.kind === "iqamah" ? IQAMAH_LEAD_MIN : e.kind === "jumuah" ? JUMUAH_LEAD_MIN : 0;
+export function reminderNotifyAt(e: Pick<ReminderEvent, "kind" | "time">): Date {
+  const lead = e.kind === "jumuah" ? JUMUAH_LEAD_MIN : 0;
   return new Date(e.time.getTime() - lead * 60_000);
 }
 
@@ -78,8 +84,7 @@ export function getReminderEvents(config: PrayerConfig, coords: GeoPoint, prefs:
         continue;
       }
       if (!prefs[prayer]) continue;
-      out.push({ kind: "adhan", prayer, dateKey: day.dateKey, time: day.times[prayer] });
-      if (prefs.iqamahReminder) out.push({ kind: "iqamah", prayer, dateKey: day.dateKey, time: day.iqamah[prayer] });
+      out.push({ kind: "adhan", prayer, dateKey: day.dateKey, time: day.times[prayer], iqamah: day.iqamah[prayer] });
     }
   }
   return out.sort((a, b) => a.time.getTime() - b.time.getTime());
@@ -109,7 +114,7 @@ export function minuteFloor(d: Date): number {
 
 /**
  * Kejadian untuk dikirim cron pada `now`: waktu tampil idealnya (`reminderNotifyAt`: adzan tepat
- * waktu, iqamah 10 menit sebelumnya, Jumat 30 menit sebelumnya) berada di jendela
+ * waktu, Jumat 30 menit sebelumnya) berada di jendela
  * [awal menit `now`, + interval). Jendela berurutan tidak saling tumpang tindih sehingga tiap
  * kejadian dikirim tepat sekali bila cron berjalan tiap `intervalMin` menit.
  */
@@ -124,42 +129,48 @@ export function getCronEvents(config: PrayerConfig, coords: GeoPoint, now: Date 
   });
 }
 
-/** Batas keterlambatan pengingat lokal (tab tertidur / perangkat sleep); lebih dari ini dilewati. */
-export const LOCAL_MAX_LATE_MS = 3 * 60_000;
+/**
+ * Batas keterlambatan pengingat lokal: lebih dari ini dianggap terlewat (tab tertidur / perangkat
+ * sleep) dan TIDAK dibunyikan, karena notifikasinya sudah ditangani push server atau sudah lewat.
+ */
+export const LOCAL_MAX_LATE_MS = 90_000;
 
-/** Pengingat yang jatuh tempo pada `now`: waktu tampil di (now - maxLate, now]. Dipakai pengecekan berkala di App. */
-export function getDueReminders(config: PrayerConfig, coords: GeoPoint, prefs: PushPreferences, now: Date = new Date(), maxLateMs = LOCAL_MAX_LATE_MS): ReminderEvent[] {
+/**
+ * Pengingat yang jatuh tempo pada `now`: waktu tampil di (now - maxLate, now] dan tidak sebelum
+ * `since` (saat App/halaman mulai terbuka). Dengan `since`, membuka App sesudah waktu adzan tidak
+ * pernah memutar adzan "tiba-tiba"; hanya App yang SUDAH terbuka saat waktunya tiba yang berbunyi.
+ */
+export function getDueReminders(
+  config: PrayerConfig,
+  coords: GeoPoint,
+  prefs: PushPreferences,
+  now: Date = new Date(),
+  { maxLateMs = LOCAL_MAX_LATE_MS, since }: { maxLateMs?: number; since?: number } = {},
+): ReminderEvent[] {
   const n = now.getTime();
   return getReminderEvents(config, coords, prefs, addDays(now, -1), 3).filter((e) => {
     const t = reminderNotifyAt(e).getTime();
+    if (since !== undefined && t < since) return false;
     return t <= n && n - t < maxLateMs;
   });
 }
 
-/** Catatan tag pengingat yang sudah dibunyikan (tag -> epoch ms); entri lebih dari 2 hari dibuang. */
-export type FiredLog = Record<string, number>;
-
-export function pruneFiredLog(log: FiredLog, now: number, keepMs = 2 * 24 * 60 * 60_000): FiredLog {
-  const out: FiredLog = {};
-  for (const [tag, at] of Object.entries(log)) {
-    if (typeof at === "number" && now - at < keepMs) out[tag] = at;
-  }
-  return out;
-}
-
 /** Apakah langganan dengan preferensi ini ingin menerima kejadian tersebut. */
-export function wantsEvent(prefs: PushPreferences, e: ReminderEvent): boolean {
+export function wantsEvent(prefs: PushPreferences, e: Pick<ReminderEvent, "kind" | "prayer">): boolean {
   if (e.kind === "jumuah") return prefs.jumuah;
-  if (e.kind === "iqamah") return prefs[e.prayer] && prefs.iqamahReminder;
   return prefs[e.prayer];
 }
 
-export type ReminderTranslate = (key: "adhanTitle" | "adhanBody" | "iqamahTitle" | "iqamahBody" | "jumuahTitle" | "jumuahBody", values: Record<string, string | number>) => string;
+export type ReminderTranslate = (key: "adhanTitle" | "adhanBody" | "jumuahTitle" | "jumuahBody", values: Record<string, string | number>) => string;
 
-/** Judul & isi notifikasi pengingat (teks dari namespace `settings.notify`). */
+/** Judul & isi notifikasi pengingat (teks dari namespace `settings.notify`). Adzan memuat jam iqamah. */
 export function buildReminderMessage(e: ReminderEvent, locale: Locale, t: ReminderTranslate, prayerName: (p: ObligatoryPrayer) => string): { title: string; body: string } {
-  const values = { prayer: prayerName(e.prayer), time: formatTime(e.time, locale), minutes: e.kind === "jumuah" ? JUMUAH_LEAD_MIN : IQAMAH_LEAD_MIN };
-  if (e.kind === "iqamah") return { title: t("iqamahTitle", values), body: t("iqamahBody", values) };
+  const values = {
+    prayer: prayerName(e.prayer),
+    time: formatTime(e.time, locale),
+    iqamah: formatTime(e.iqamah ?? e.time, locale),
+    minutes: JUMUAH_LEAD_MIN,
+  };
   if (e.kind === "jumuah") return { title: t("jumuahTitle", values), body: t("jumuahBody", values) };
   return { title: t("adhanTitle", values), body: t("adhanBody", values) };
 }

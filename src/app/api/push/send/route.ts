@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import webpush, { type PushSubscription as WebPushSubscription } from "web-push";
 import { z } from "zod";
 import { getTranslations } from "next-intl/server";
@@ -10,6 +11,7 @@ import {
   buildReminderMessage,
   getCronEvents,
   normalizePreferences,
+  reminderNotifyAt,
   reminderTag,
   wantsEvent,
   type ReminderEvent,
@@ -22,10 +24,11 @@ import {
  *
  * Mode cron (GET tiap menit dari penjadwal luar seperti cron-job.org, atau POST tanpa body / { mode: "cron" }):
  *   kejadian yang waktu tampilnya jatuh di menit berjalan [awal menit, + interval) dikirim sesuai
- *   preferensi & bahasa: adzan tepat pada menit adzan, iqamah 10 menit sebelumnya, Jumat 30 menit
- *   sebelumnya. Interval bawaan 1 menit; penjadwal yang lebih jarang memakai `?interval=5`
- *   (atau env PUSH_CRON_INTERVAL_MIN) agar tidak ada yang terlewat (dikirim lebih awal).
- *   Pemanggilan ganda di menit yang sama (retry penjadwal) diabaikan lewat catatan tag di memori.
+ *   preferensi & bahasa: SATU notifikasi per waktu salat (adzan tepat pada menit adzan, isinya
+ *   memuat jam iqamah) dan Jumat 30 menit sebelumnya. Interval bawaan 1 menit; penjadwal yang lebih
+ *   jarang memakai `?interval=5` (atau env PUSH_CRON_INTERVAL_MIN) agar tidak ada yang terlewat.
+ *   Pemanggilan ganda (retry penjadwal, dua penjadwal sekaligus, instance serverless berbeda)
+ *   diabaikan lewat tabel `push_sent_log` (migrasi 0004; cadangan: catatan di memori).
  * Mode broadcast (POST dari admin):
  *   { mode: "broadcast", title: { ja, en, id }, body: { ja, en, id }, url } ke semua langganan.
  *
@@ -58,6 +61,34 @@ function claimEvents(events: ReminderEvent[], now: number): ReminderEvent[] {
   return fresh;
 }
 
+/**
+ * Klaim kejadian secara atomik di database (INSERT ... ON CONFLICT DO NOTHING): hanya pemanggilan
+ * pertama untuk sebuah tag yang mengirim, walau penjadwal memanggil dua kali di instance berbeda.
+ * Bila tabel belum dibuat (migrasi 0004 belum dijalankan), cukup memakai catatan di memori.
+ */
+async function claimEventsDurable(client: SupabaseClient, events: ReminderEvent[], now: number): Promise<ReminderEvent[]> {
+  const fresh = claimEvents(events, now);
+  if (fresh.length === 0) return fresh;
+  const rows = fresh.map((e) => ({ tag: reminderTag(e), sent_at: new Date(now).toISOString() }));
+  const { data, error } = await client.from("push_sent_log").upsert(rows, { onConflict: "tag", ignoreDuplicates: true }).select("tag");
+  if (error) return fresh;
+  const won = new Set(((data ?? []) as { tag: string }[]).map((r) => r.tag));
+  // Bersihkan catatan lama sesekali (tidak menunggu hasilnya).
+  void client.from("push_sent_log").delete().lt("sent_at", new Date(now - 3 * 24 * 60 * 60_000).toISOString()).then(() => undefined, () => undefined);
+  return fresh.filter((e) => won.has(reminderTag(e)));
+}
+
+/** Gagal sebelum ada push yang terkirim: lepas klaim agar retry penjadwal masih bisa mengirimnya. */
+async function releaseClaims(client: SupabaseClient, events: ReminderEvent[]): Promise<void> {
+  const tags = events.map(reminderTag);
+  if (tags.length === 0) return;
+  for (const t of tags) recentlySent.delete(t);
+  await client.from("push_sent_log").delete().in("tag", tags).then(
+    () => undefined,
+    () => undefined,
+  );
+}
+
 function cronInterval(request: Request): number {
   const raw = new URL(request.url).searchParams.get("interval") ?? process.env.PUSH_CRON_INTERVAL_MIN ?? "";
   const n = Number.parseInt(raw, 10);
@@ -67,7 +98,7 @@ function cronInterval(request: Request): number {
 /** TTL push: pengingat adzan yang tertunda lebih dari beberapa menit tidak lagi berguna. */
 function ttlFor(payload: Payload): number {
   if (payload.kind === "adhan") return 5 * 60;
-  if (payload.kind === "iqamah" || payload.kind === "jumuah") return 10 * 60;
+  if (payload.kind === "jumuah") return 10 * 60;
   return 60 * 60;
 }
 
@@ -155,12 +186,15 @@ async function handle(request: Request, body: unknown): Promise<Response> {
   if (!broadcast) {
     const [config, profile] = await Promise.all([getPrayerConfig(), getProfile()]);
     const now = new Date();
-    events = claimEvents(getCronEvents(config, profile.coordinates, now, cronInterval(request)), now.getTime());
+    events = await claimEventsDurable(client, getCronEvents(config, profile.coordinates, now, cronInterval(request)), now.getTime());
     if (events.length === 0) return Response.json({ ok: true, sent: 0, mode, reason: "no-events" } satisfies SendResult);
   }
 
   const { data, error } = await client.from("push_subscriptions").select("id, endpoint, keys, locale, preferences");
-  if (error) return Response.json({ ok: false, error: "database" }, { status: 500 });
+  if (error) {
+    await releaseClaims(client, events);
+    return Response.json({ ok: false, error: "database" }, { status: 500 });
+  }
   const rows = (data ?? []) as Row[];
   if (rows.length === 0) return Response.json({ ok: true, sent: 0, mode, reason: "no-subscribers" } satisfies SendResult);
 
@@ -176,20 +210,25 @@ async function handle(request: Request, body: unknown): Promise<Response> {
   const locales = Array.from(new Set(rows.map((r) => toLocale(r.locale))));
   const messages = new Map<Locale, Map<string, { title: string; body: string }>>();
   const actionLabels = new Map<Locale, { open: string; dismiss: string }>();
-  await Promise.all(
-    locales.map(async (locale) => {
-      const [t, tp] = await Promise.all([getTranslations({ locale, namespace: "settings" }), getTranslations({ locale, namespace: "prayer" })]);
-      const map = new Map<string, { title: string; body: string }>();
-      for (const e of events) {
-        map.set(
-          reminderTag(e),
-          buildReminderMessage(e, locale, (key, values) => t(`notify.${key}`, values), (p: ObligatoryPrayer) => tp(`names.${p}`)),
-        );
-      }
-      messages.set(locale, map);
-      actionLabels.set(locale, { open: t("notify.actionOpen"), dismiss: t("notify.actionDismiss") });
-    }),
-  );
+  try {
+    await Promise.all(
+      locales.map(async (locale) => {
+        const [t, tp] = await Promise.all([getTranslations({ locale, namespace: "settings" }), getTranslations({ locale, namespace: "prayer" })]);
+        const map = new Map<string, { title: string; body: string }>();
+        for (const e of events) {
+          map.set(
+            reminderTag(e),
+            buildReminderMessage(e, locale, (key, values) => t(`notify.${key}`, values), (p: ObligatoryPrayer) => tp(`names.${p}`)),
+          );
+        }
+        messages.set(locale, map);
+        actionLabels.set(locale, { open: t("notify.actionOpen"), dismiss: t("notify.actionDismiss") });
+      }),
+    );
+  } catch {
+    await releaseClaims(client, events);
+    return Response.json({ ok: false, error: "messages" }, { status: 500 });
+  }
 
   const result = await sendAll(rows, (row, locale) => {
     const prefs = normalizePreferences(row.preferences);
@@ -198,7 +237,7 @@ async function handle(request: Request, body: unknown): Promise<Response> {
     return wanted.map((e) => {
       const tag = reminderTag(e);
       const msg = messages.get(locale)?.get(tag) ?? { title: "Al Muttaqin", body: "" };
-      return { ...msg, url: `/${locale}/app/prayer`, tag, kind: e.kind, prayer: e.prayer, at: e.time.toISOString(), actions: actionLabels.get(locale) };
+      return { ...msg, url: `/${locale}/app/prayer`, tag, kind: e.kind, prayer: e.prayer, at: e.time.toISOString(), notifyAt: reminderNotifyAt(e).toISOString(), actions: actionLabels.get(locale) };
     });
   });
   return Response.json({ ok: true, mode, ...result } satisfies SendResult);

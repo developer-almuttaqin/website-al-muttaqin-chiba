@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { BellRing, Play, Square, X } from "lucide-react";
+import { ArrowUpRight, BellRing, Megaphone, Play, Square, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -19,13 +20,21 @@ function SoundBars() {
   );
 }
 
+/** URL notifikasi ("/id/events/x") menjadi href tanpa prefix bahasa untuk router next-intl. */
+function toLocalHref(url: string): string | null {
+  if (!url.startsWith("/") || url.startsWith("//")) return null;
+  return url.replace(/^\/(ja|en|id)(?=\/|$|\?|#)/, "") || "/";
+}
+
 /**
- * Banner selebar layar saat pengingat adzan berbunyi di App: judul, isi, tombol Stop / Putar
- * (bila browser memblokir autoplay) dan Tutup. Berada di bawah status bar iPhone (safe area).
+ * Banner khas Al Muttaqin saat pengingat berbunyi di App (adzan, Jumat, pengumuman, uji): judul,
+ * isi, tombol Stop / Putar (bila browser memblokir suara), Buka (pengumuman bertaut) dan Tutup.
+ * Berada di bawah status bar iPhone (safe area).
  */
 export function AdhanAlertBanner() {
   const t = useTranslations("settings");
   const alert = useAdhanAlert();
+  const router = useRouter();
 
   React.useEffect(() => {
     if (alert.status === "idle" || alert.source !== "alert") return;
@@ -39,16 +48,25 @@ export function AdhanAlertBanner() {
   if (alert.status === "idle" || alert.source !== "alert") return null;
   const playing = alert.status === "playing";
   const blocked = alert.status === "blocked";
+  const isBroadcast = alert.kind === "broadcast";
+  const label = isBroadcast ? t("alert.labelBroadcast") : alert.kind === "test" ? t("alert.labelTest") : t("alert.label");
+  const openHref = isBroadcast && alert.url ? toLocalHref(alert.url) : null;
+  const externalUrl = isBroadcast && alert.url && /^https?:\/\//i.test(alert.url) ? alert.url : null;
+  const open = () => {
+    dismissAlert();
+    if (openHref) router.push(openHref);
+    else if (externalUrl) window.open(externalUrl, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] safe-top pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]">
       <div className="mx-auto max-w-md px-3 pt-2">
         <section role="alertdialog" aria-labelledby="adhan-alert-title" aria-describedby="adhan-alert-body" className="hero-surface pointer-events-auto animate-fade-up rounded-3xl p-4 shadow-soft ring-1 ring-hero-foreground/10">
           <div className="flex items-start gap-3">
-            <IconTile icon={BellRing} tone="amber" variant="solid" size="md" className={cn(playing && "motion-safe:animate-pulse-soft")} />
+            <IconTile icon={isBroadcast ? Megaphone : BellRing} tone="amber" variant="solid" size="md" className={cn(playing && "motion-safe:animate-pulse-soft")} />
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-2 text-xs font-semibold tracking-wide text-hero-foreground/70 uppercase">
-                {t("alert.label")}
+                {label}
                 {playing && <SoundBars />}
               </p>
               <h2 id="adhan-alert-title" className="mt-0.5 text-lg leading-tight font-bold">
@@ -62,12 +80,12 @@ export function AdhanAlertBanner() {
               <X className="size-5" aria-hidden />
             </button>
           </div>
-          {blocked && <p className="mt-3 rounded-xl bg-hero-foreground/10 px-3 py-2 text-sm text-hero-foreground/90">{t("alert.blocked")}</p>}
+          {blocked && <p className="mt-3 rounded-xl bg-hero-foreground/10 px-3 py-2 text-sm text-hero-foreground/90">{alert.sound === "adhan" ? t("alert.blocked") : t("alert.blockedSound")}</p>}
           <div className="mt-4 flex gap-2">
             {blocked ? (
               <Button variant="inverse" className="flex-1" onClick={retryAlertSound}>
                 <Play aria-hidden />
-                {t("alert.play")}
+                {alert.sound === "adhan" ? t("alert.play") : t("alert.playSound")}
               </Button>
             ) : playing ? (
               <Button variant="inverse" className="flex-1" onClick={stopAlertSound}>
@@ -75,6 +93,12 @@ export function AdhanAlertBanner() {
                 {t("alert.stop")}
               </Button>
             ) : null}
+            {(openHref || externalUrl) && (
+              <Button variant="inverse" className="flex-1" onClick={open}>
+                {t("alert.open")}
+                <ArrowUpRight aria-hidden />
+              </Button>
+            )}
             <Button variant="outlineInverse" className="flex-1" onClick={dismissAlert}>
               {t("alert.close")}
             </Button>

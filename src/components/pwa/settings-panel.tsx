@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AudioLines, Bell, BellOff, BellRing, CircleCheck, HardDrive, Info, Languages, LocateFixed, Landmark, Monitor, Moon, Play, Send, Smartphone, Square, Sun, SunMoon, TriangleAlert, Type, Vibrate, Volume1, Volume2, VolumeX } from "lucide-react";
+import { AudioLines, Bell, BellOff, BellRing, CircleCheck, HardDrive, Info, Languages, LocateFixed, Landmark, Monitor, Moon, EighthNotes, Play, Send, Smartphone, Square, Sun, SunMoon, TriangleAlert, Type, Vibrate, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { localeNames } from "@/i18n/routing";
@@ -20,7 +20,7 @@ import { useStandalone } from "./browser-state";
 import { InstallButton, IosSteps } from "./install-prompt";
 import { clearSiteStorage, useLocalValue, writeLocal } from "./local-store";
 import { usePushSubscription } from "./use-push-subscription";
-import { previewSound, setPlayingVolume, stopAlertSound, triggerAlert, unlockAudio, useAdhanAlert, useSoundSettings, warmAdhanCache, type SoundMode } from "./adhan-sound";
+import { previewSound, setPlayingVolume, stopAlertSound, triggerAlert, unlockAudio, useAdhanAlert, useSoundSettings, warmAlertSounds, type SoundMode } from "./adhan-sound";
 
 export const QIBLA_LOCATION_KEY = "acc-qibla-location";
 export type QiblaLocationMode = "device" | "mosque";
@@ -35,7 +35,7 @@ const THEMES: { mode: ThemeMode; icon: React.ComponentType<{ className?: string 
 
 const SOUND_OPTIONS: { mode: SoundMode; icon: React.ComponentType<{ className?: string }> }[] = [
   { mode: "adhan", icon: AudioLines },
-  { mode: "chime", icon: Bell },
+  { mode: "chime", icon: EighthNotes },
   { mode: "vibrate", icon: Vibrate },
   { mode: "silent", icon: VolumeX },
 ];
@@ -128,20 +128,23 @@ export function SettingsPanel({ version }: { version: string }) {
     toast({ title: t("notifications.disabledToast"), tone: "default" });
   };
 
-  /** Uji rantai lengkap: notifikasi sistem lewat service worker + suara & banner di App. */
+  /**
+   * Uji rantai lengkap: banner + suara khas di App, dan notifikasi sistem lewat service worker
+   * (senyap bila App sudah berbunyi, agar tidak terdengar dobel).
+   */
   const sendTest = async () => {
     unlockAudio();
     const title = t("notifications.testTitle");
     const body = t("notifications.testBody");
-    triggerAlert({ title, body, tag: "acc-test", kind: "test" }, sound);
-    const ok = await push.sendTest(title, body);
+    void triggerAlert({ title, body, tag: "acc-test", kind: "test" }, sound);
+    const ok = await push.sendTest(title, body, { silent: sound.mode === "adhan" || sound.mode === "chime" });
     toast(ok ? { title: t("notifications.testSent"), tone: "success" } : { title: t("notifications.testFailed"), tone: "error" });
   };
 
   const chooseSound = (mode: SoundMode) => {
     if (previewing) stopAlertSound();
     setSound({ ...sound, mode });
-    if (mode === "adhan") warmAdhanCache();
+    warmAlertSounds(mode);
   };
 
   const changeVolume = (value: number) => {
@@ -314,7 +317,6 @@ export function SettingsPanel({ version }: { version: string }) {
             {OBLIGATORY_PRAYERS.map((p: ObligatoryPrayer) => (
               <SwitchRow key={p} id={`notify-${p}`} label={tprayer(`names.${p}`)} checked={push.preferences[p]} onCheckedChange={(v) => push.setPreference(p, v)} />
             ))}
-            <SwitchRow id="notify-iqamah" label={t("notifications.iqamah")} description={t("notifications.iqamahHint")} checked={push.preferences.iqamahReminder} onCheckedChange={(v) => push.setPreference("iqamahReminder", v)} />
             <SwitchRow id="notify-jumuah" label={t("notifications.jumuah")} description={t("notifications.jumuahHint")} checked={push.preferences.jumuah} onCheckedChange={(v) => push.setPreference("jumuah", v)} />
           </div>
           <p className="text-xs text-muted-foreground">{t("notifications.localHint")}</p>

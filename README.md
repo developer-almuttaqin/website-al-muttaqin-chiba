@@ -39,7 +39,7 @@ Salin `.env.example` ke `.env.local`. Semua variabel opsional:
 2. SQL Editor > New query > tempel seluruh isi `supabase/setup-all.sql` > Run. Berkas ini memuat
    skema + RLS (migrasi 0001-0003), data awal dari `src/data`, dan akun admin pertama. Aman dijalankan
    ulang; data yang sudah diubah admin tidak ditimpa. Pada proyek baru, ganti dulu `GANTI_KATA_SANDI_AWAL`
-   (bagian 5/5) dengan kata sandi awal admin; kata sandi sengaja tidak disimpan di repositori publik ini.
+   (bagian 6/6) dengan kata sandi awal admin; kata sandi sengaja tidak disimpan di repositori publik ini.
 3. Authentication > URL Configuration: isi Site URL dan tambahkan `<NEXT_PUBLIC_SITE_URL>/admin/auth/callback`
    ke Redirect URLs (untuk undangan admin dan magic link).
 4. Isi `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (atau `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
@@ -92,16 +92,28 @@ atau data seed, jalankan `pnpm db:sql` dan commit hasilnya.
 ## Pengingat adzan (pemicu tiap menit)
 
 Ada dua jalur, keduanya memakai perhitungan yang sama (`src/components/pwa/reminders.ts`):
-adzan tepat pada menit adzan, iqamah 10 menit sebelum iqamah, Jumat 30 menit sebelum Jumatan.
+**satu notifikasi per waktu salat** (tepat pada menit adzan, isinya memuat jam iqamah) dan Jumat
+30 menit sebelum Jumatan. Tidak ada lagi pengingat iqamah terpisah (dulu jatuh di menit yang sama
+dengan adzan sehingga notifikasi beruntun).
 
-**Saat App terbuka** (layar mana pun di `/app`, juga di tab latar belakang): `AdhanReminderHost` di
-`src/app/[locale]/app/layout.tsx` mencocokkan jadwal dengan jam setiap 20 detik (plus timer presisi
-menjelang waktunya, dan saat tab aktif kembali), lalu menampilkan notifikasi sistem lewat service
-worker, memutar suara pilihan di Pengaturan (adzan penuh dari `public/audio/adhan-madinah.mp3`, chime
-Web Audio, getar saja, atau senyap), dan menampilkan banner dengan tombol Hentikan. Tiap kejadian
-diklaim lewat tag di localStorage (`acc-reminder-fired`) sehingga hanya berbunyi sekali walau ada
-beberapa tab atau push server ikut tiba. Browser memblokir suara sebelum ada interaksi; App membuka
-kunci audio pada ketukan pertama, dan banner menampilkan tombol Putar bila suara tetap diblokir.
+**Satu kejadian, satu notifikasi.** Service worker dan halaman App mengklaim setiap tag kejadian
+(mis. `adhan-dhuhr-2026-11-20`) di catatan bersama Cache Storage (`src/components/pwa/fired-store.ts`):
+siapa pun yang pertama (push server atau pengingat lokal) yang membunyikan; yang berikutnya hanya
+mengganti notifikasi diam-diam. Paling banyak satu notifikasi waktu salat tampil sekaligus. Di server,
+tabel `push_sent_log` (migrasi `0004`) mencegah pengiriman ganda bila penjadwal memanggil dua kali.
+
+**Saat App terbuka** (layar mana pun di `/app`): `AdhanReminderHost` di `src/app/[locale]/app/layout.tsx`
+mencocokkan jadwal dengan jam setiap 15 detik (plus timer presisi menjelang waktunya), lalu memutar
+suara khas pilihan di Pengaturan (adzan penuh `public/audio/adhan-madinah.mp3`, jingle khas
+Al Muttaqin `public/audio/notify-jingle.m4a`, getar saja, atau senyap) dengan banner bertombol
+Hentikan. Push server yang tiba saat App terlihat juga dibunyikan di App (adzan / jingle, termasuk
+pengumuman dari admin). Hanya kejadian yang terjadi SELAMA App terbuka (maks. 90 detik lalu) yang
+berbunyi: membuka App, termasuk lewat klik notifikasi, cukup membuka/mengarahkan App tanpa memutar
+adzan. Browser baru mengizinkan suara setelah App diketuk sekali per pembukaan; App menampilkan
+petunjuk kecil sampai ketukan pertama (gestur `touchend`/`click`, bukan `pointerdown`), dan banner
+menampilkan tombol Putar bila suara tetap diblokir. Audio tidak di-precache (rute precache tidak
+melayani permintaan Range yang diwajibkan `<audio>` Safari/iOS); aturan runtime `/audio/` di `sw.ts`
+menyimpannya setelah diunduh sekali.
 
 **Saat App tertutup** (Web Push dari server): paket Vercel Hobby hanya mengizinkan cron harian, jadi
 `vercel.json` sengaja tanpa `crons`. Pengingat dipicu dari penjadwal luar yang gratis, misalnya
@@ -122,10 +134,16 @@ diabaikan, jadi tiap kejadian terkirim sekali. Bila penjadwal hanya bisa tiap 5 
 offline tidak menerima pengingat basi.
 
 Service worker (`src/app/sw.ts`) menampilkan notifikasi adzan dengan `requireInteraction`, pola getar,
-`renotify`, dan tombol "Buka jadwal" / "Tutup"; bila jendela App sedang terbuka, SW juga mengirim
-pesan agar halaman memutar suara adzan. **Batasan browser:** notifikasi push latar belakang tidak bisa
-memakai suara kustom (adzan); perangkat memakai suara notifikasi standarnya. Di iPhone, notifikasi
-hanya bekerja setelah App ditambahkan ke Layar Utama (iOS 16.4+).
+badge monokrom `public/icons/badge-96.png`, dan tombol "Buka jadwal" / "Tutup"; bila jendela App
+sedang terlihat, SW mengirim pesan agar halaman memutar suara khas dan notifikasi sistemnya senyap
+(Safari) atau dilewati (Chromium). **Batasan browser:** notifikasi push saat App tertutup tidak bisa
+memakai suara kustom (adzan/jingle) di Android maupun iPhone; perangkat memakai suara notifikasi
+standarnya. Di iPhone, notifikasi hanya bekerja setelah App ditambahkan ke Layar Utama (iOS 16.4+).
+
+**Daftar periksa bila notifikasi adzan tidak muncul saat App tertutup:** `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
+`VAPID_PRIVATE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, dan `PUSH_CRON_SECRET` terisi di Vercel (lalu
+redeploy, karena kunci publik VAPID ditanam saat build); penjadwal tiap menit aktif (cron-job.org di
+atas atau `pg_cron` di bawah); di App, Pengaturan > Notifikasi menampilkan lencana "Push aktif".
 
 Alternatif tanpa cron-job.org, memakai Supabase `pg_cron` + `pg_net` (aktifkan kedua ekstensi di
 Database > Extensions, lalu jalankan di SQL Editor):

@@ -11,6 +11,10 @@ const CORE_PAGES = ["/offline", "/app", "/app/prayer", "/app/qibla", "/app/dua",
 
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } = createSerwistRoute({
   additionalPrecacheEntries: LOCALES.flatMap((locale) => CORE_PAGES.map((page) => ({ url: `/${locale}${page}`, revision }))),
+  // Audio TIDAK di-precache: rute precache menjawab permintaan Range dengan 200 penuh, padahal
+  // elemen <audio> Safari/iOS (termasuk PWA terpasang) mewajibkan 206 sehingga suara gagal diputar.
+  // Audio dilayani aturan runtime /audio/ di sw.ts (CacheFirst + RangeRequestsPlugin).
+  globIgnores: ["**/node_modules/**/*", "public/audio/**/*"],
   swSrc: "src/app/sw.ts",
   useNativeEsbuild: true,
 });

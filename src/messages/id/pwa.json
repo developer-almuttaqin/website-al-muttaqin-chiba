@@ -14,7 +14,7 @@
   "offlineNow": "Anda sedang offline. Menampilkan konten tersimpan.",
   "notifications": {
     "title": "Notifikasi adzan",
-    "body": "Dapatkan notifikasi setiap masuk waktu salat dan menjelang iqamah.",
+    "body": "Satu notifikasi setiap masuk waktu salat, lengkap dengan jam iqamah di masjid.",
     "enable": "Aktifkan notifikasi",
     "enabled": "Notifikasi aktif",
     "denied": "Notifikasi diblokir di pengaturan browser Anda.",
