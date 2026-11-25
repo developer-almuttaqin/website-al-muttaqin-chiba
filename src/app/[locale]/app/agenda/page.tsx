@@ -10,11 +10,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { AddToCalendar, EventCard } from "@/components/activities";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "events" });
-  return { title: t("app.title"), description: t("app.description") };
+  return pageMetadata({ locale, path: "/app/agenda", title: t("app.title"), description: t("app.description"), canonicalPath: "/events" });
 }
 
 export default async function AppAgendaPage({ params }: { params: Promise<{ locale: string }> }) {

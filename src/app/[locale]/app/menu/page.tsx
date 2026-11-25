@@ -6,11 +6,12 @@ import { SCREEN_ICONS, SCREEN_TONES } from "@/components/app/screen-icons";
 import { AppScreenHeader, PoweredBy } from "@/components/app/shell";
 import { IconCircle } from "@/components/ui/primitives";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "app" });
-  return { title: t("menu.title"), description: t("menu.description") };
+  return pageMetadata({ locale, path: "/app/menu", title: t("menu.title"), description: t("menu.description"), noindex: true });
 }
 
 /** Semua fitur App Jamaah dalam grid ikon sederhana modern (ubin flat beraksen lembut). */

@@ -17,6 +17,7 @@ import { PrintButton } from "@/components/prayer/print-button";
 import { TimeCountdown } from "@/components/prayer/time-countdown";
 import { duhaFrom, imsakFrom, monthKey, resolveMonth, shiftMonth } from "@/components/prayer/prayer-utils";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 /** Tanggal "hari ini" dan hitungan bulan bergantung jam server; jangan diprerender saat build. */
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ type PageProps = { params: Promise<{ locale: string }>; searchParams: Promise<Re
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "prayer" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/prayer-times", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function PrayerTimesPage({ params, searchParams }: PageProps) {

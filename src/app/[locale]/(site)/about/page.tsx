@@ -15,11 +15,12 @@ import { BoardGrid, FacilitiesGrid, PartnersStrip, StatsRow, Timeline } from "@/
 import { DocumentaryFeature } from "@/components/home/home-documentary";
 import { cn } from "@/lib/utils/cn";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "about" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/about", title: t("meta.title"), description: t("meta.description") });
 }
 
 const PILLAR_ICONS = [Users, HeartHandshake, BookOpen, Languages] as const;

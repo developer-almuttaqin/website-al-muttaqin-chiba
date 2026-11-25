@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import { AppScreenHeader } from "@/components/app/shell";
 import { SurahReader } from "@/components/worship";
 import { surahLocalName } from "@/components/worship/utils";
+import { pageMetadata } from "@/lib/seo";
 
 type Params = { locale: string; surah: string };
 
@@ -27,10 +28,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const t = await getTranslations({ locale, namespace: "quran" });
   const meta = n ? await getSurahMeta(n) : undefined;
   if (!meta) return { title: t("meta.title") };
-  return {
+  return pageMetadata({
+    locale,
+    path: `/app/quran/${n}`,
     title: `${meta.transliteration} (${meta.name}) · ${t("meta.title")}`,
     description: `${surahLocalName(meta, locale as Locale)} · ${t("ayahs", { count: meta.numberOfAyahs })}`,
-  };
+  });
 }
 
 export default async function SurahPage({ params }: { params: Promise<Params> }) {

@@ -4,11 +4,12 @@ import type { Locale } from "@/lib/types";
 import { getHalalPlaces, getProfile } from "@/lib/data";
 import { AppScreenHeader } from "@/components/app/shell";
 import { HalalRadar } from "@/components/guides";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "radar" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/app/radar", title: t("meta.title"), description: t("meta.description"), canonicalPath: "/halal" });
 }
 
 /** Layar App Jamaah: radar halal dengan peta ~45vh, daftar terurut jarak, tombol "lokasi saya". */

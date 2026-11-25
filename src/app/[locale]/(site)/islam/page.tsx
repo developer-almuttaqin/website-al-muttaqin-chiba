@@ -14,11 +14,12 @@ import { SectionTag } from "@/components/ui/section-tag";
 import { IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "islam" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/islam", title: t("meta.title"), description: t("meta.description") });
 }
 
 const FAITH_KEYS = ["1", "2", "3", "4", "5", "6"] as const;

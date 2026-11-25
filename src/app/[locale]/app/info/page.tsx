@@ -7,11 +7,12 @@ import { getAnnouncements } from "@/lib/data";
 import { AppScreenHeader } from "@/components/app/shell";
 import { buttonVariants } from "@/components/ui/button";
 import { AnnouncementList } from "@/components/activities";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "news" });
-  return { title: t("app.title"), description: t("app.description") };
+  return pageMetadata({ locale, path: "/app/info", title: t("app.title"), description: t("app.description"), canonicalPath: "/news" });
 }
 
 export default async function AppInfoPage({ params }: { params: Promise<{ locale: string }> }) {

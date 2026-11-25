@@ -4,11 +4,12 @@ import type { Locale } from "@/lib/types";
 import { getSurahList } from "@/lib/data";
 import { AppScreenHeader } from "@/components/app/shell";
 import { SurahList } from "@/components/worship";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "quran" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/app/quran", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function QuranPage({ params }: { params: Promise<{ locale: string }> }) {

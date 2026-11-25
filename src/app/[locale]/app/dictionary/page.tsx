@@ -4,11 +4,12 @@ import type { Locale } from "@/lib/types";
 import { getDictionary } from "@/lib/data";
 import { AppScreenHeader } from "@/components/app/shell";
 import { DictionarySearch } from "@/components/guides";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "dictionary" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/app/dictionary", title: t("meta.title"), description: t("meta.description"), canonicalPath: "/dictionary" });
 }
 
 /** Layar App Jamaah: kamus dakwah versi ringkas, kotak cari di atas, "Tunjukkan" sebagai aksi utama. */

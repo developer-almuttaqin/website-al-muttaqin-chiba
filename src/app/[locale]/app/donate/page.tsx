@@ -9,11 +9,12 @@ import { AppScreenHeader } from "@/components/app/shell";
 import { IconCircle } from "@/components/ui/primitives";
 import { DonationAccountsList, DonationFlow } from "@/components/donate";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "donate" });
-  return { title: t("app.title"), description: t("app.description") };
+  return pageMetadata({ locale, path: "/app/donate", title: t("app.title"), description: t("app.description"), canonicalPath: "/donate" });
 }
 
 /** Layar Infaq App Jamaah (PRD-05): rekening + QRIS, nominal unik, konfirmasi satu kolom. */

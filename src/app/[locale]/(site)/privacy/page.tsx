@@ -8,11 +8,12 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { RichText } from "@/components/ui/rich-text";
 import { buttonVariants } from "@/components/ui/button";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "privacy" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/privacy", title: t("meta.title"), description: t("meta.description") });
 }
 
 /** Urutan bagian kebijakan (APPI Jepang, PRD-03a). Isi tiap bagian ada di pesan `privacy.sections.*`. */

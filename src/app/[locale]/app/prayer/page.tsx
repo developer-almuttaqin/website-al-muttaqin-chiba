@@ -10,6 +10,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { JumuahCard, PrayerTodayCard } from "@/components/prayer";
 import { OfflineSchedule } from "@/components/prayer/offline-schedule";
 import { aos } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 /** Jadwal mulai "hari ini" bergantung jam server; jangan diprerender saat build. */
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "prayer" });
-  return { title: t("app.title"), description: t("app.description") };
+  return pageMetadata({ locale, path: "/app/prayer", title: t("app.title"), description: t("app.description"), canonicalPath: "/prayer-times" });
 }
 
 export default async function AppPrayerPage({ params }: { params: Promise<{ locale: string }> }) {

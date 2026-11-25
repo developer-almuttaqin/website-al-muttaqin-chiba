@@ -32,6 +32,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { NewcomerChecklist, PrintButton } from "@/components/guides";
 import { cn } from "@/lib/utils/cn";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 type NamedItem = { name: string; detail: string };
 type EmergencyNumber = { label: string; number: string; detail: string };
@@ -39,7 +40,7 @@ type EmergencyNumber = { label: string; number: string; detail: string };
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "newcomers" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/newcomers", title: t("meta.title"), description: t("meta.description") });
 }
 
 const TOC: { key: "firstSteps" | "garbage" | "transport" | "halal" | "emergency" | "work" | "contact"; icon: React.ComponentType }[] = [

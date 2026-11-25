@@ -10,13 +10,14 @@ import { buttonVariants } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
 import { LectureBrowser, LiveStatusBanner } from "@/components/activities";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 const CHANNEL_KEYS = ["1", "2", "3"] as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "lectures" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/lectures", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function LecturesPage({ params }: { params: Promise<{ locale: string }> }) {

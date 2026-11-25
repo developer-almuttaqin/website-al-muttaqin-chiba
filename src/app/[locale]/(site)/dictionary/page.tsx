@@ -7,6 +7,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { NumberedItem } from "@/components/ui/primitives";
 import { DictionarySearch } from "@/components/guides";
 import { aos } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 type Tip = { name: string; detail: string };
 const TIP_ICONS = [Maximize2, Copy, Volume2];
@@ -14,7 +15,7 @@ const TIP_ICONS = [Maximize2, Copy, Volume2];
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "dictionary" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/dictionary", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function DictionaryPage({ params }: { params: Promise<{ locale: string }> }) {

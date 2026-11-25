@@ -12,6 +12,7 @@ import { EmptyState, IconCircle, NumberedItem } from "@/components/ui/primitives
 import { SectionHeading } from "@/components/ui/section-heading";
 import { JumuahCard } from "@/components/prayer";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 /** Jumat "pekan ini" bergantung tanggal server; jangan diprerender saat build. */
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "jumuah" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/jumuah", title: t("meta.title"), description: t("meta.description") });
 }
 
 const ETIQUETTE_KEYS = ["1", "2", "3", "4", "5"] as const;

@@ -4,11 +4,12 @@ import type { Locale } from "@/lib/types";
 import { getAnnouncements, getNews } from "@/lib/data";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { NewsBrowser } from "@/components/activities";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "news" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/news", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function NewsPage({ params }: { params: Promise<{ locale: string }> }) {

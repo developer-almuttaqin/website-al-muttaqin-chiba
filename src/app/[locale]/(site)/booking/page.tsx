@@ -11,11 +11,12 @@ import { SectionTag } from "@/components/ui/section-tag";
 import { IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { aos, stagger } from "@/components/shared/aos-props";
 import { BookingForm, type BookingRoomOption } from "@/components/programs";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "booking" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/booking", title: t("meta.title"), description: t("meta.description") });
 }
 
 const RULE_KEYS = ["1", "2", "3", "4", "5"] as const;

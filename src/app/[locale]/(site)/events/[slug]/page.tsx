@@ -7,6 +7,8 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "@/lib/types";
 import { getEventBySlug, getEvents, getProfile } from "@/lib/data";
 import { siteUrl } from "@/lib/site";
+import { breadcrumbLd, eventLd, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/shared/json-ld";
 import { formatCurrency, formatDate, formatDateTime, formatTime, formatWeekday, pick, pickBlocks } from "@/lib/utils/i18n";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -26,7 +28,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale, slug } = await params;
   const event = await getEventBySlug(slug);
   if (!event) return {};
-  return { title: pick(event.title, locale as Locale), description: pick(event.excerpt, locale as Locale) };
+  return pageMetadata({
+    locale,
+    path: `/events/${event.slug}`,
+    title: pick(event.title, locale as Locale),
+    description: pick(event.excerpt, locale as Locale),
+    image: event.coverImage ? { url: event.coverImage } : undefined,
+  });
 }
 
 export default async function EventDetailPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
@@ -51,6 +59,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ lo
 
   return (
     <div className="container-site py-12 lg:py-16">
+      <JsonLd data={[eventLd(event, locale, profile), breadcrumbLd(locale, [{ name: t("meta.title"), path: "/events" }, { name: title, path: `/events/${event.slug}` }])]} />
       <Link href="/events" className={buttonVariants({ variant: "ghost", size: "sm", className: "-ml-3" })}>
         <ArrowLeft />
         {t("detail.back")}

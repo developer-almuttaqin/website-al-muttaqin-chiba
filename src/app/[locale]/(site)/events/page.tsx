@@ -9,6 +9,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { IconCircle } from "@/components/ui/primitives";
 import { EventBrowser } from "@/components/activities";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 const ROUTINE_PROGRAMS: Program["id"][] = ["weekly-kajian", "tpa", "japanese-class"];
 
@@ -25,7 +26,7 @@ const PROGRAM_ICONS: Record<Program["icon"], typeof BookOpen> = {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "events" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/events", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function EventsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ tab?: string }> }) {

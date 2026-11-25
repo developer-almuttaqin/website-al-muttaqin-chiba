@@ -13,6 +13,8 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import { LectureCard, ShareButton } from "@/components/activities";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { breadcrumbLd, pageMetadata, videoLd } from "@/lib/seo";
+import { JsonLd } from "@/components/shared/json-ld";
 
 export async function generateStaticParams() {
   const lectures = await getLectures();
@@ -24,11 +26,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const lecture = await getLectureBySlug(slug);
   if (!lecture) return {};
   const title = pick(lecture.title, locale as Locale);
-  return {
+  return pageMetadata({
+    locale,
+    path: `/lectures/${lecture.slug}`,
     title,
     description: pick(lecture.description, locale as Locale),
-    openGraph: { title, images: [{ url: `https://i.ytimg.com/vi/${lecture.youtubeId}/hqdefault.jpg` }] },
-  };
+    image: { url: `https://i.ytimg.com/vi/${lecture.youtubeId}/hqdefault.jpg`, width: 480, height: 360, alt: title },
+  });
 }
 
 export default async function LectureDetailPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
@@ -54,6 +58,7 @@ export default async function LectureDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="container-site py-12 lg:py-16">
+      <JsonLd data={[videoLd(lecture, locale), breadcrumbLd(locale, [{ name: t("meta.title"), path: "/lectures" }, { name: title, path: `/lectures/${lecture.slug}` }])]} />
       <Link href="/lectures" className={buttonVariants({ variant: "ghost", size: "sm", className: "-ml-3" })}>
         <ArrowLeft />
         {t("detail.back")}

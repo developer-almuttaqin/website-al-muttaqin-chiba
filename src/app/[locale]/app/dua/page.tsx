@@ -4,11 +4,12 @@ import type { Locale } from "@/lib/types";
 import { getDuas } from "@/lib/data";
 import { AppScreenHeader } from "@/components/app/shell";
 import { DuaList } from "@/components/worship";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "dua" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/app/dua", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function DuaPage({ params }: { params: Promise<{ locale: string }> }) {
