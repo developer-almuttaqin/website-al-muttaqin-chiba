@@ -12,11 +12,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/primitives";
 import { FaqAccordion } from "@/components/about";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "faq" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/faq", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function FaqPage({ params }: { params: Promise<{ locale: string }> }) {

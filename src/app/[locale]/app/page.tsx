@@ -14,13 +14,14 @@ import { AnnouncementList, LiveStatusBanner } from "@/components/activities";
 import { DonateCta } from "@/components/donate";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { OfflineBadge } from "@/components/pwa/offline-badge";
+import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "app" });
-  return { title: t("title"), description: t("description") };
+  return pageMetadata({ locale, path: "/app", title: t("title"), description: t("description") });
 }
 
 /** Beranda App Jamaah (PRD-07b). Jadwal dihitung di perangkat/server; konten lain dari cache SW saat offline. */

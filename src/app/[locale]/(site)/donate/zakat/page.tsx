@@ -3,11 +3,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { ZakatCalculator } from "@/components/donate";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "zakat" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/donate/zakat", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function ZakatPage({ params }: { params: Promise<{ locale: string }> }) {

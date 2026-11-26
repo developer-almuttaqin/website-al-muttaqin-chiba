@@ -7,11 +7,12 @@ import { EmptyState, IconCircle } from "@/components/ui/primitives";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { aos, stagger } from "@/components/shared/aos-props";
 import { DonateCta, TransparencyChart, TransparencyReportCard } from "@/components/donate";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "transparency" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/transparency", title: t("meta.title"), description: t("meta.description") });
 }
 
 const PRINCIPLE_ICONS = { "1": BadgeCheck, "2": Users, "3": CalendarCheck, "4": CircleQuestionMark } as const;

@@ -4,11 +4,12 @@ import type { Locale } from "@/lib/types";
 import { getProfile } from "@/lib/data";
 import { AppScreenHeader } from "@/components/app/shell";
 import { QiblaCompass } from "@/components/worship";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "qibla" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/app/qibla", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function QiblaPage({ params }: { params: Promise<{ locale: string }> }) {

@@ -9,11 +9,12 @@ import { AppScreenHeader } from "@/components/app/shell";
 import { buttonVariants } from "@/components/ui/button";
 import { AppLectureList, LiveStatusBanner } from "@/components/activities";
 import { aos } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "live" });
-  return { title: t("app.title"), description: t("app.description") };
+  return pageMetadata({ locale, path: "/app/live", title: t("app.title"), description: t("app.description") });
 }
 
 export default async function AppLivePage({ params }: { params: Promise<{ locale: string }> }) {

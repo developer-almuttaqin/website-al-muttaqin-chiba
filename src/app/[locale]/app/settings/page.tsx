@@ -4,11 +4,12 @@ import type { Locale } from "@/lib/types";
 import { AppScreenHeader, PoweredBy } from "@/components/app/shell";
 import { SettingsPanel } from "@/components/pwa/settings-panel";
 import pkg from "../../../../../package.json";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "settings" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/app/settings", title: t("meta.title"), description: t("meta.description"), noindex: true });
 }
 
 export default async function SettingsPage({ params }: { params: Promise<{ locale: string }> }) {

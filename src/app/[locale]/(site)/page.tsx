@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/types";
-import { siteUrl } from "@/lib/site";
+import { pageMetadata } from "@/lib/seo";
 import {
   HomeContact,
   HomeDocumentary,
@@ -28,16 +28,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "home" });
-  const title = t("meta.title");
-  const description = t("meta.description");
-  const url = `${siteUrl}/${locale}`;
-  return {
-    title: { absolute: title },
-    description,
-    alternates: { canonical: url },
-    openGraph: { type: "website", url, title, description },
-    twitter: { card: "summary_large_image", title, description },
-  };
+  return pageMetadata({ locale, path: "", title: t("meta.title"), description: t("meta.description"), absoluteTitle: true });
 }
 
 /** Beranda situs (PRD-03b): 14 section berurutan, mobile-first. */

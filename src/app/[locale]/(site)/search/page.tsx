@@ -13,6 +13,7 @@ import { MAX_QUERY_LENGTH, groupResults } from "@/components/search/search";
 import { SEARCH_TYPE_ICONS } from "@/components/search/type-icons";
 import { inputClassName } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
+import { pageMetadata } from "@/lib/seo";
 
 type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string | string[] }> };
 
@@ -25,11 +26,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const { locale } = await params;
   const q = readQuery((await searchParams).q);
   const t = await getTranslations({ locale, namespace: "search" });
-  return {
-    title: q ? t("meta.titleWithQuery", { query: q }) : t("meta.title"),
-    description: t("meta.description"),
-    robots: { index: false, follow: true },
-  };
+  return pageMetadata({ locale, path: "/search", title: q ? t("meta.titleWithQuery", { query: q }) : t("meta.title"), description: t("meta.description"), noindex: true });
 }
 
 export default async function SearchPage({ params, searchParams }: Props) {

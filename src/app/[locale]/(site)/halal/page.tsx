@@ -12,6 +12,7 @@ import { IconCircle } from "@/components/ui/primitives";
 import { HalalRadar, HaramKanjiSearch } from "@/components/guides";
 import { cn } from "@/lib/utils/cn";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 type LabelItem = { term: string; reading: string; meaning: string };
 type LinkItem = { name: string; detail: string; url: string };
@@ -19,7 +20,7 @@ type LinkItem = { name: string; detail: string; url: string };
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "halal" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/halal", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function HalalPage({ params }: { params: Promise<{ locale: string }> }) {

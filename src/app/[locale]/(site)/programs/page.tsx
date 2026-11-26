@@ -10,11 +10,12 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { aos } from "@/components/shared/aos-props";
 import { ProgramGrid } from "@/components/programs";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "programs" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/programs", title: t("meta.title"), description: t("meta.description") });
 }
 
 const STEP_KEYS = ["1", "2", "3", "4"] as const;

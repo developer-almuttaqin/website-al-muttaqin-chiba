@@ -16,6 +16,8 @@ import { IconCircle, NumberedItem } from "@/components/ui/primitives";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { aos, stagger } from "@/components/shared/aos-props";
 import { ProgramIcon, ProgramRegistrationForm } from "@/components/programs";
+import { breadcrumbLd, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/shared/json-ld";
 
 type Params = { locale: string; slug: string };
 
@@ -29,10 +31,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const program = await getProgramBySlug(slug);
   if (!program) return {};
   const t = await getTranslations({ locale, namespace: "programs" });
-  return {
+  return pageMetadata({
+    locale,
+    path: `/programs/${program.slug}`,
     title: t("detail.metaTitle", { program: pick(program.title, locale as Locale) }),
     description: pick(program.excerpt, locale as Locale),
-  };
+  });
 }
 
 const STEP_KEYS = ["1", "2", "3", "4"] as const;
@@ -63,6 +67,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<Pa
 
   return (
     <>
+      <JsonLd data={breadcrumbLd(locale, [{ name: t("meta.title"), path: "/programs" }, { name: title, path: `/programs/${program.slug}` }])} />
       <section className="hero-surface pattern-shippo">
         <div className="container-site py-14 lg:py-20">
           <Link href="/programs" className="tap-link inline-flex items-center gap-2 text-sm font-semibold text-hero-muted hover:text-hero-foreground">

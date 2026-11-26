@@ -14,6 +14,8 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { AnnouncementList, NewsCard, ShareButton } from "@/components/activities";
 import { CoverImage } from "@/components/activities/cover-image";
 import { aos, stagger } from "@/components/shared/aos-props";
+import { articleLd, breadcrumbLd, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/shared/json-ld";
 
 /** Apakah instant ISO sudah lewat (di luar komponen agar render tetap murni). */
 function isPast(iso: string): boolean {
@@ -40,7 +42,16 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale, slug } = await params;
   const entry = await findEntry(slug);
   if (!entry) return {};
-  return { title: pick(entry.item.title, locale as Locale), description: pick(entry.item.excerpt, locale as Locale) };
+  const cover = entry.kind === "post" ? entry.item.coverImage : undefined;
+  return pageMetadata({
+    locale,
+    path: `/news/${entry.item.slug}`,
+    title: pick(entry.item.title, locale as Locale),
+    description: pick(entry.item.excerpt, locale as Locale),
+    type: "article",
+    publishedTime: entry.item.publishedAt,
+    image: cover ? { url: cover } : undefined,
+  });
 }
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
@@ -61,6 +72,21 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ loc
 
   return (
     <div className="container-site py-12 lg:py-16">
+      <JsonLd
+        data={[
+          articleLd({
+            locale,
+            path: `/news/${item.slug}`,
+            headline: title,
+            description: pick(item.excerpt, locale),
+            publishedAt: item.publishedAt,
+            image: entry.kind === "post" ? entry.item.coverImage : undefined,
+            author: entry.kind === "post" ? entry.item.author : undefined,
+            kind: isAnnouncement ? "Article" : "NewsArticle",
+          }),
+          breadcrumbLd(locale, [{ name: t("meta.title"), path: "/news" }, { name: title, path: `/news/${item.slug}` }]),
+        ]}
+      />
       <Link href="/news" className={buttonVariants({ variant: "ghost", size: "sm", className: "-ml-3" })}>
         <ArrowLeft />
         {t("labels.back")}

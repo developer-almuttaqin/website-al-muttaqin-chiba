@@ -8,11 +8,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { InstagramIcon } from "@/components/site/social-icons";
 import { GalleryGrid } from "@/components/about";
 import { aos } from "@/components/shared/aos-props";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "gallery" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/gallery", title: t("meta.title"), description: t("meta.description") });
 }
 
 export default async function GalleryPage({ params }: { params: Promise<{ locale: string }> }) {

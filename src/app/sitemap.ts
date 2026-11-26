@@ -25,16 +25,26 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/about", priority: 0.7, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.2, changeFrequency: "yearly" },
   { path: "/app", priority: 0.8, changeFrequency: "daily" },
+  // Alat App Jamaah yang isinya tidak ada di halaman situs. Layar App yang kembaran halaman situs
+  // (agenda, donasi, info, salat, kamus, radar) sengaja tidak masuk: canonical-nya menunjuk halaman situs.
+  { path: "/app/quran", priority: 0.6, changeFrequency: "yearly" },
+  { path: "/app/dua", priority: 0.6, changeFrequency: "yearly" },
+  { path: "/app/qibla", priority: 0.5, changeFrequency: "yearly" },
+  { path: "/app/hijri", priority: 0.5, changeFrequency: "monthly" },
+  { path: "/app/tasbih", priority: 0.3, changeFrequency: "yearly" },
+  { path: "/app/live", priority: 0.5, changeFrequency: "weekly" },
 ];
 
 function entry(path: string, extra: Partial<MetadataRoute.Sitemap[number]> = {}): MetadataRoute.Sitemap {
   return routing.locales.map((locale) => ({
     url: `${siteUrl}/${locale}${path}`,
-    lastModified: extra.lastModified ?? new Date(),
+    // Hanya isi yang punya tanggal nyata yang diberi lastModified; tanggal "sekarang" di setiap halaman
+    // membuat mesin pencari mengabaikan kolom ini.
+    ...(extra.lastModified ? { lastModified: extra.lastModified } : {}),
     changeFrequency: extra.changeFrequency ?? "weekly",
     priority: extra.priority ?? 0.5,
     alternates: {
-      languages: Object.fromEntries(routing.locales.map((l) => [l, `${siteUrl}/${l}${path}`])),
+      languages: { ...Object.fromEntries(routing.locales.map((l) => [l, `${siteUrl}/${l}${path}`])), "x-default": `${siteUrl}/${routing.defaultLocale}${path}` },
     },
   }));
 }

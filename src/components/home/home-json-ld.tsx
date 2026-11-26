@@ -27,6 +27,11 @@ export async function HomeJsonLd({ locale }: { locale: Locale }) {
     alternateName: profile.shortName,
     description: pick(profile.description, locale),
     url,
+    image: [`${siteUrl}/images/masjid/og.jpg`],
+    logo: `${siteUrl}/icons/icon-512.png`,
+    isAccessibleForFree: true,
+    publicAccess: true,
+    foundingDate: String(profile.foundedYear),
     telephone: profile.phone,
     email: profile.email,
     address: {

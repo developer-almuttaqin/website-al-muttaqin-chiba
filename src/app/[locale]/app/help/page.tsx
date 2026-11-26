@@ -4,11 +4,12 @@ import type { Locale } from "@/lib/types";
 import { getProfile } from "@/lib/data";
 import { AppScreenHeader } from "@/components/app/shell";
 import { HelpCenter } from "@/components/programs";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "help" });
-  return { title: t("meta.title"), description: t("meta.description") };
+  return pageMetadata({ locale, path: "/app/help", title: t("meta.title"), description: t("meta.description"), noindex: true });
 }
 
 export default async function AppHelpPage({ params }: { params: Promise<{ locale: string }> }) {
