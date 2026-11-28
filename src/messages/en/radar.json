@@ -43,5 +43,5 @@
   "suggestNote": "Notes (halal certification, what they sell)",
   "suggestFill": "(please fill in)",
   "note": "Note",
-  "placeholderHint": "Entries with a PLACEHOLDER address are waiting for the committee to confirm."
+  "dataHint": "Checked on 28 November 2026 against official sites or at least two independent sources. Halal status and opening hours can change; confirm with the venue if unsure."
 }
