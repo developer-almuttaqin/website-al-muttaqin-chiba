@@ -43,5 +43,5 @@
   "suggestNote": "Catatan (sertifikat halal, apa yang dijual)",
   "suggestFill": "(mohon diisi)",
   "note": "Catatan",
-  "placeholderHint": "Entri dengan alamat PLACEHOLDER menunggu konfirmasi pengurus."
+  "dataHint": "Data dicek 28 November 2026 dari situs resmi atau minimal dua sumber independen. Status halal dan jam buka bisa berubah; konfirmasi langsung ke tempatnya bila ragu."
 }

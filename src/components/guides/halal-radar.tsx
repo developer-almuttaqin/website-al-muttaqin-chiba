@@ -188,7 +188,7 @@ export function HalalRadar({ places, locale, center, whatsapp, variant = "site" 
         </ul>
       )}
 
-      <p className="text-xs text-muted-foreground">{t("placeholderHint")}</p>
+      <p className="text-xs text-muted-foreground">{t("dataHint")}</p>
     </div>
   );
 }
