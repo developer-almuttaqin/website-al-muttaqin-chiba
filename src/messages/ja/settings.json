@@ -33,7 +33,12 @@
     "testTitle": "アル・ムッタキーン",
     "testBody": "テスト通知: この端末でアザーン通知が使えます。",
     "testSent": "テスト通知を送りました。",
-    "testFailed": "テスト通知を表示できませんでした。"
+    "testFailed": "テスト通知を表示できませんでした。",
+    "serverTest": "サーバーからテスト",
+    "serverTestSent": "{seconds}秒後に送信します。画面をロックするかアプリを閉じると、アザーン通知と同じように表示されます。",
+    "serverTestFailed": "サーバーからのプッシュに失敗しました({reason})。",
+    "serverTestHint": "サーバーテストは、アプリを閉じているときのアザーン通知と同じ経路を使います。",
+    "notSubscribed": "この端末はまだサーバープッシュに登録されていません。通知を一度オフにしてから、もう一度オンにしてください。"
   },
   "qibla": {
     "title": "キブラの基準位置",
@@ -77,7 +82,9 @@
     "jumuahTitle": "金曜礼拝 {time}",
     "jumuahBody": "アル・ムッタキーンの金曜礼拝まであと{minutes}分です。",
     "actionOpen": "時刻表を開く",
-    "actionDismiss": "閉じる"
+    "actionDismiss": "閉じる",
+    "serverTestTitle": "サーバーからのテスト通知",
+    "serverTestBody": "成功しました。アプリを閉じていても、アザーン通知はこのように届きます。"
   },
   "sound": {
     "title": "お知らせの音",
