@@ -305,3 +305,25 @@ self.addEventListener("notificationclose", (event) => {
   const data = event.notification.data as { tag?: string } | undefined;
   event.waitUntil(broadcastStop(data?.tag ?? event.notification.tag));
 });
+
+/**
+ * Browser mengganti / mencabut langganan push (Chromium & Firefox; Safari tidak memicunya):
+ * buat ulang dengan kunci server yang sama lalu daftarkan ke server, agar adzan tetap datang
+ * walau App tidak dibuka. Bahasa & preferensi dipindahkan server dari baris lama (`oldEndpoint`).
+ * Bila gagal, App mendaftarkan ulang sendiri saat dibuka berikutnya (syncPushSubscription).
+ */
+async function renewSubscription(event: PushSubscriptionChangeEvent): Promise<void> {
+  const old = event.oldSubscription;
+  const key = old?.options.applicationServerKey ?? null;
+  const sub = event.newSubscription ?? (key ? await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }) : null);
+  if (!sub) return;
+  await fetch("/api/push/subscribe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscription: sub.toJSON(), oldEndpoint: old?.endpoint }),
+  });
+}
+
+self.addEventListener("pushsubscriptionchange", (event) => {
+  event.waitUntil(renewSubscription(event).catch(() => undefined));
+});

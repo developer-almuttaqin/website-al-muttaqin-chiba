@@ -4,7 +4,9 @@ import { normalizePreferences } from "@/components/pwa/reminders";
 
 /**
  * Simpan / hapus langganan Web Push (PRD-07b).
- *   POST   { subscription: { endpoint, keys: { p256dh, auth } }, locale, preferences } -> { ok, stored }
+ *   POST   { subscription: { endpoint, keys: { p256dh, auth } }, locale?, preferences?, oldEndpoint? } -> { ok, stored }
+ *          `oldEndpoint`: langganan lama yang digantikan (kunci VAPID baru / `pushsubscriptionchange` di SW).
+ *          Bahasa & preferensi yang tidak dikirim diambil dari baris lama, lalu baris lama dihapus.
  *   DELETE { endpoint } -> { ok, removed }
  * Tanpa Supabase (service role) -> { ok: true, stored: false, reason: "no-database" }.
  */
@@ -16,10 +18,13 @@ const subscriptionSchema = z.object({
   keys: z.object({ p256dh: z.string().min(1).max(200), auth: z.string().min(1).max(100) }),
 });
 
+const localeSchema = z.enum(["ja", "en", "id"]);
+
 const postSchema = z.object({
   subscription: subscriptionSchema,
-  locale: z.enum(["ja", "en", "id"]).default("id"),
+  locale: localeSchema.optional(),
   preferences: z.record(z.string(), z.boolean()).optional(),
+  oldEndpoint: z.url().max(1000).optional(),
 });
 
 const deleteSchema = z.object({ endpoint: z.url().max(1000) });
@@ -58,19 +63,29 @@ export async function POST(request: Request) {
   const client = getServiceClient();
   if (!client) return Response.json({ ok: true, stored: false, reason: "no-database" });
 
-  const { subscription, locale, preferences } = parsed.data;
+  const { subscription, preferences } = parsed.data;
+  const oldEndpoint = parsed.data.oldEndpoint && parsed.data.oldEndpoint !== subscription.endpoint ? parsed.data.oldEndpoint : undefined;
+  let previous: { locale: string | null; preferences: unknown } | null = null;
+  if (oldEndpoint && (!parsed.data.locale || !preferences)) {
+    const { data } = await client.from("push_subscriptions").select("locale, preferences").eq("endpoint", oldEndpoint).maybeSingle();
+    previous = (data as { locale: string | null; preferences: unknown } | null) ?? null;
+  }
+  const previousLocale = localeSchema.safeParse(previous?.locale);
+  const locale = parsed.data.locale ?? (previousLocale.success ? previousLocale.data : "id");
+
   const { error } = await client.from("push_subscriptions").upsert(
     {
       endpoint: subscription.endpoint,
       keys: subscription.keys,
       locale,
-      preferences: normalizePreferences(preferences),
+      preferences: normalizePreferences(preferences ?? previous?.preferences),
       user_agent: request.headers.get("user-agent")?.slice(0, 300) ?? null,
       last_seen_at: new Date().toISOString(),
     },
     { onConflict: "endpoint" },
   );
   if (error) return Response.json({ ok: false, error: "database" }, { status: 500 });
+  if (oldEndpoint) await client.from("push_subscriptions").delete().eq("endpoint", oldEndpoint);
   return Response.json({ ok: true, stored: true });
 }
 

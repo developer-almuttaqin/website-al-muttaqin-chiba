@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AudioLines, Bell, BellOff, BellRing, CircleCheck, HardDrive, Info, Languages, LocateFixed, Landmark, Monitor, Moon, EighthNotes, Play, Send, Smartphone, Square, Sun, SunMoon, TriangleAlert, Type, Vibrate, Volume1, Volume2, VolumeX } from "lucide-react";
+import { AudioLines, Bell, BellOff, BellRing, CircleCheck, HardDrive, Info, Languages, LocateFixed, Landmark, Monitor, Moon, EighthNotes, Play, RadioTower, Send, Smartphone, Square, Sun, SunMoon, TriangleAlert, Type, Vibrate, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { localeNames } from "@/i18n/routing";
@@ -26,6 +26,8 @@ export const QIBLA_LOCATION_KEY = "acc-qibla-location";
 export type QiblaLocationMode = "device" | "mosque";
 
 const LOCALES: Locale[] = ["ja", "en", "id"];
+/** Jeda tes push server: cukup untuk mengunci layar / menutup App sebelum notifikasi tiba. */
+const SERVER_TEST_DELAY_SEC = 8;
 const THEMES: { mode: ThemeMode; icon: React.ComponentType<{ className?: string }> }[] = [
   { mode: "light", icon: Sun },
   { mode: "dark", icon: Moon },
@@ -139,6 +141,21 @@ export function SettingsPanel({ version }: { version: string }) {
     void triggerAlert({ title, body, tag: "acc-test", kind: "test" }, sound);
     const ok = await push.sendTest(title, body, { silent: sound.mode === "adhan" || sound.mode === "chime" });
     toast(ok ? { title: t("notifications.testSent"), tone: "success" } : { title: t("notifications.testFailed"), tone: "error" });
+  };
+
+  /** Uji jalur server (sama dengan adzan saat App tertutup), dikirim beberapa detik kemudian. */
+  const [serverTesting, setServerTesting] = React.useState(false);
+  const sendServerTest = async () => {
+    unlockAudio();
+    setServerTesting(true);
+    try {
+      const result = await push.sendServerTest(SERVER_TEST_DELAY_SEC);
+      if (result.ok) toast({ title: t("notifications.serverTestSent", { seconds: result.delaySec }), tone: "success" });
+      else if (result.reason === "not-subscribed") toast({ title: t("notifications.notSubscribed"), tone: "error" });
+      else toast({ title: t("notifications.serverTestFailed", { reason: result.reason }), tone: "error" });
+    } finally {
+      setServerTesting(false);
+    }
   };
 
   const chooseSound = (mode: SoundMode) => {
@@ -257,6 +274,17 @@ export function SettingsPanel({ version }: { version: string }) {
                 <Send aria-hidden />
                 {tpwa("notifications.test")}
               </Button>
+            </div>
+          )}
+
+          {push.vapidConfigured && push.enabled && (
+            <div className="space-y-2">
+              {!push.subscribed && <Notice tone="warning">{t("notifications.notSubscribed")}</Notice>}
+              <Button variant="outline" onClick={sendServerTest} disabled={serverTesting || push.busy} className="w-full">
+                <RadioTower aria-hidden />
+                {t("notifications.serverTest")}
+              </Button>
+              <p className="text-xs text-muted-foreground">{t("notifications.serverTestHint")}</p>
             </div>
           )}
 

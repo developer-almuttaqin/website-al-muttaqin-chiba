@@ -33,7 +33,12 @@
     "testTitle": "Al Muttaqin",
     "testBody": "Notifikasi uji: notifikasi adzan berfungsi di perangkat ini.",
     "testSent": "Notifikasi uji terkirim.",
-    "testFailed": "Notifikasi uji tidak dapat ditampilkan."
+    "testFailed": "Notifikasi uji tidak dapat ditampilkan.",
+    "serverTest": "Tes dari server",
+    "serverTestSent": "Dikirim dalam {seconds} detik. Kunci layar atau tutup App untuk melihatnya seperti notifikasi adzan.",
+    "serverTestFailed": "Push dari server gagal ({reason}).",
+    "serverTestHint": "Tes dari server memakai jalur yang sama dengan notifikasi adzan saat App tertutup.",
+    "notSubscribed": "Perangkat ini belum terdaftar untuk push server. Matikan lalu aktifkan lagi notifikasi."
   },
   "qibla": {
     "title": "Lokasi untuk kiblat",
@@ -77,7 +82,9 @@
     "jumuahTitle": "Salat Jumat pukul {time}",
     "jumuahBody": "Salat Jumat di Al Muttaqin dimulai {minutes} menit lagi.",
     "actionOpen": "Buka jadwal",
-    "actionDismiss": "Tutup"
+    "actionDismiss": "Tutup",
+    "serverTestTitle": "Tes notifikasi dari server",
+    "serverTestBody": "Berhasil. Notifikasi adzan akan datang seperti ini, walau App tertutup."
   },
   "sound": {
     "title": "Suara pengingat",

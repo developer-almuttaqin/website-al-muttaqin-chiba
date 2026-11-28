@@ -115,15 +115,25 @@ menampilkan tombol Putar bila suara tetap diblokir. Audio tidak di-precache (rut
 melayani permintaan Range yang diwajibkan `<audio>` Safari/iOS); aturan runtime `/audio/` di `sw.ts`
 menyimpannya setelah diunduh sekali.
 
-**Saat App tertutup** (Web Push dari server): paket Vercel Hobby hanya mengizinkan cron harian, jadi
-`vercel.json` sengaja tanpa `crons`. Pengingat dipicu dari penjadwal luar yang gratis, misalnya
-[cron-job.org](https://cron-job.org):
+**Saat App tertutup** (Web Push dari server). Tiga syarat, semuanya wajib:
 
-1. Isi `PUSH_CRON_SECRET` di Environment Variables Vercel dengan string acak panjang, lalu redeploy.
-2. Di cron-job.org buat job baru: URL `https://<domain>/api/push/send`, metode `GET`,
-   jadwal **tiap menit** (`* * * * *`). Zona waktu job tidak berpengaruh.
-3. Di tab Advanced tambahkan header `Authorization` bernilai `Bearer <PUSH_CRON_SECRET>`.
-4. Klik "Test run". Respons yang benar berbentuk `{"ok":true,"sent":0,...}`; `401` berarti header salah.
+1. **Env di Vercel** (Production + Preview): `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
+   `VAPID_SUBJECT`, `PUSH_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`. Kunci VAPID dibuat sekali
+   (`npx web-push generate-vapid-keys`) dan jangan diganti. Setelah mengisi, **Redeploy**: kunci publik
+   VAPID ditanam saat build, tanpa redeploy HP tidak pernah berlangganan.
+2. **Penjadwal tiap menit** ke `/api/push/send`. Vercel Hobby hanya mengizinkan cron harian, jadi
+   `vercel.json` sengaja tanpa `crons`. Cara utama: Supabase `pg_cron` + `pg_net`. Buka
+   `supabase/push-cron.sql`, ganti `GANTI_DOMAIN`, jalankan di SQL Editor, lalu isi rahasia lewat `set_push_cron_secret` (cara ada di kepala berkas)
+   (berkas itu juga membuat tabel `push_sent_log`, rahasia disimpan di Vault). Cadangan opsional:
+   [cron-job.org](https://cron-job.org), job `GET https://<domain>/api/push/send` tiap menit dengan header
+   `Authorization: Bearer <PUSH_CRON_SECRET>`. Keduanya boleh aktif bersamaan; `push_sent_log` mencegah dobel.
+3. **HP berlangganan**: App Jamaah > Pengaturan > Notifikasi > Aktifkan (iPhone: dari ikon Layar Utama).
+   Lencana "Push aktif" harus tampil. Tombol **Tes dari server** mengirim push lewat jalur yang sama
+   dengan adzan 8 detik kemudian; kunci layar untuk melihatnya seperti notifikasi adzan.
+
+Perangkat yang sudah mengaktifkan notifikasi didaftarkan ulang otomatis setiap App/situs dibuka
+(`syncPushSubscription` di `PwaRuntime`): saat kunci VAPID baru dipasang, saat browser mengganti
+langganan (juga `pushsubscriptionchange` di `sw.ts`), atau bila barisnya terhapus di server.
 
 Setiap panggilan mengirim kejadian yang waktu tampilnya jatuh di menit berjalan
 (`[awal menit, +1 menit)`; waktu salat dibulatkan ke menit), sehingga notifikasi tiba beberapa detik
@@ -139,28 +149,6 @@ sedang terlihat, SW mengirim pesan agar halaman memutar suara khas dan notifikas
 (Safari) atau dilewati (Chromium). **Batasan browser:** notifikasi push saat App tertutup tidak bisa
 memakai suara kustom (adzan/jingle) di Android maupun iPhone; perangkat memakai suara notifikasi
 standarnya. Di iPhone, notifikasi hanya bekerja setelah App ditambahkan ke Layar Utama (iOS 16.4+).
-
-**Daftar periksa bila notifikasi adzan tidak muncul saat App tertutup:** `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
-`VAPID_PRIVATE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, dan `PUSH_CRON_SECRET` terisi di Vercel (lalu
-redeploy, karena kunci publik VAPID ditanam saat build); penjadwal tiap menit aktif (cron-job.org di
-atas atau `pg_cron` di bawah); di App, Pengaturan > Notifikasi menampilkan lencana "Push aktif".
-
-Alternatif tanpa cron-job.org, memakai Supabase `pg_cron` + `pg_net` (aktifkan kedua ekstensi di
-Database > Extensions, lalu jalankan di SQL Editor):
-
-```sql
-select cron.schedule(
-  'acc-push-adhan',
-  '* * * * *',
-  $$
-  select net.http_get(
-    url := 'https://<domain>/api/push/send',
-    headers := jsonb_build_object('Authorization', 'Bearer <PUSH_CRON_SECRET>')
-  );
-  $$
-);
--- Menghentikan: select cron.unschedule('acc-push-adhan');
-```
 
 Bila nanti memakai Vercel Pro, cron bawaan bisa dipakai lagi dengan menambahkan ke `vercel.json`:
 `"crons": [{ "path": "/api/push/send", "schedule": "* * * * *" }]` dan mengisi `CRON_SECRET`.
